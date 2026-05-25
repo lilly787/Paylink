@@ -9,32 +9,58 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
         height: 100vh;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: white;
+        background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 45%, #d97706 100%);
+        z-index: 99999;
+        color: #0f172a; /* Deep Slate text */
+        text-align: center;
+        font-family: 'Inter', sans-serif;
     }
     .logo-container {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 80px;
-        height: 80px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        backdrop-filter: blur(10px);
-        margin-bottom: 1.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        width: 90px;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.45);
+        border: 2px solid rgba(217, 119, 6, 0.3); /* Subtle gold border */
+        border-radius: 24px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     }
     .app-name {
-        font-size: 2.5rem;
-        font-weight: 700;
-        letter-spacing: -0.05em;
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
         margin-bottom: 0.5rem;
+        color: #0f172a;
+        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
     }
-    .loading-text {
+    .app-subtitle {
         font-size: 1rem;
-        opacity: 0.8;
-        margin-top: 2rem;
+        font-weight: 600;
+        color: #1e3a8a; /* Midnight Blue */
+        opacity: 0.9;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 3rem;
+    }
+    .loading-spinner {
+        width: 24px;
+        height: 24px;
+        border: 3px solid rgba(15, 23, 42, 0.15);
+        border-top-color: #d97706; /* Deep Gold */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 </style>
 {% endblock %}
@@ -42,10 +68,11 @@
 {% block content %}
 <div class="splash-container">
     <div class="logo-container animate-pulse-slow">
-        <i data-feather="link-2" style="width: 40px; height: 40px; color: white;"></i>
+        <i data-feather="link-2" style="width: 44px; height: 44px; color: #1e3a8a;"></i>
     </div>
     <h1 class="app-name animate-fade-in-up">Paylink</h1>
-    <p class="loading-text animate-fade-in-up" style="animation-delay: 0.2s;">Secure Banking. Loading...</p>
+    <p class="app-subtitle animate-fade-in-up" style="animation-delay: 0.15s;">Premium Banking Ecosystem</p>
+    <div class="loading-spinner animate-fade-in-up" style="animation-delay: 0.3s;"></div>
 </div>
 {% endblock %}
 
@@ -53,6 +80,6 @@
 <script>
     setTimeout(() => {
         window.location.href = "{{ url_for('onboarding') }}";
-    }, 2500);
+    }, 2800);
 </script>
 {% endblock %}

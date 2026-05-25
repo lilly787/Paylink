@@ -1,18 +1,18 @@
 :root {
-  /* Vibrant Dark Fintech Theme */
-  --primary: #7c3aed;      /* Vivid Purple */
-  --primary-hover: #6d28d9;
-  --secondary: #06b6d4;    /* Neon Cyan */
-  --bg-color: #0f172a;     /* Deep Slate */
-  --surface: #1e293b;      /* Slightly lighter Slate */
+  /* Premium Midnight Navy & Gleaming Gold Bank Theme */
+  --primary: #d4af37;        /* Luxury Gold */
+  --primary-hover: #b8860b;  /* Deep Gold */
+  --secondary: #38bdf8;      /* Vibrant Sky/Light Blue */
+  --bg-color: #080c14;       /* Midnight Navy Black */
+  --surface: #111827;        /* Deep Charcoal Slate */
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
-  --success: #10b981;      /* Emerald */
-  --danger: #f43f5e;       /* Rose/Red */
+  --success: #10b981;        /* Emerald Green */
+  --danger: #f43f5e;         /* Rose Red */
   
-  /* Glassmorphism */
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  /* Glassmorphism with dynamic Gold accents */
+  --glass-bg: rgba(17, 24, 39, 0.75);
+  --glass-border: rgba(212, 175, 55, 0.15);
   
   /* Spacing */
   --space-xs: 0.5rem;
@@ -34,14 +34,14 @@
 }
 
 [data-theme="light"] {
-    --bg-color: #f1f5f9;
+    --bg-color: #f8fafc;
     --surface: #ffffff;
-    --primary: #6d28d9;
-    --secondary: #0891b2;
+    --primary: #b8860b;      /* Deep Gold */
+    --secondary: #0288d1;    /* Corporate Sky Blue */
     --text-main: #0f172a;
     --text-muted: #64748b;
-    --glass-bg: rgba(255, 255, 255, 0.8);
-    --glass-border: rgba(0, 0, 0, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(184, 134, 11, 0.1);
     --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);

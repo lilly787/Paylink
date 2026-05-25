@@ -197,18 +197,17 @@
             </div>
             <i data-feather="chevron-right" class="text-muted"></i>
         </a>
-        <a href="#" class="menu-item">
+        <div class="menu-item" style="cursor: pointer;" onclick="handleProfileThemeToggle()">
             <div class="menu-item-left">
                 <div class="menu-icon"><i data-feather="moon"></i></div>
                 <span class="menu-title">Dark Mode</span>
             </div>
             <div class="menu-item-right">
-                <!-- Simple toggle mockup -->
-                <div style="width: 40px; height: 20px; background: var(--glass-border); border-radius: 20px; position: relative;">
-                    <div style="width: 16px; height: 16px; background: var(--text-muted); border-radius: 50%; position: absolute; top: 2px; left: 2px;"></div>
+                <div class="toggle-switch" id="profile-theme-toggle" style="position: relative; width: 44px; height: 24px; background: var(--glass-border); border-radius: 24px; transition: background 0.3s;">
+                    <div style="width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" id="profile-theme-thumb"></div>
                 </div>
             </div>
-        </a>
+        </div>
     </div>
 
     <div class="menu-group">
@@ -237,11 +236,41 @@
         };
         updateAvatar(user);
 
+        // Initialize theme switch state
+        const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+        const toggle = document.getElementById('profile-theme-toggle');
+        const thumb = document.getElementById('profile-theme-thumb');
+        if (toggle && thumb) {
+            if (isDark) {
+                toggle.style.background = 'var(--success)';
+                thumb.style.transform = 'translateX(20px)';
+            } else {
+                toggle.style.background = 'var(--glass-border)';
+                thumb.style.transform = 'translateX(0px)';
+            }
+        }
+
         user = await refreshUser();
         document.getElementById('profile-name-display').textContent = user.fullname;
         document.getElementById('profile-email-display').textContent = user.email;
         updateAvatar(user);
     });
+
+    function handleProfileThemeToggle() {
+        const toggle = document.getElementById('profile-theme-toggle');
+        const thumb = document.getElementById('profile-theme-thumb');
+        const nextTheme = toggleTheme();
+        
+        if (nextTheme === 'dark') {
+            toggle.style.background = 'var(--success)';
+            thumb.style.transform = 'translateX(20px)';
+            showToast('Dark Mode Activated!', 'success');
+        } else {
+            toggle.style.background = 'var(--glass-border)';
+            thumb.style.transform = 'translateX(0px)';
+            showToast('Light Mode Activated!', 'success');
+        }
+    }
 </script>
 {% endblock %}
 
