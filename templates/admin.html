@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Control Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--space-lg);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+    }
+    .back-btn {
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Tabs */
+    .tab-container {
+        display: flex;
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        padding: 4px;
+        margin-bottom: var(--space-lg);
+        border: 1px solid var(--glass-border);
+    }
+    .tab {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem;
+        font-size: 0.825rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+    }
+    .tab.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    /* Admin components */
+    .admin-card {
+        background: var(--surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+        box-shadow: var(--shadow-sm);
+    }
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    .admin-table th {
+        font-size: 0.675rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: var(--space-xs) 0;
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .admin-table td {
+        padding: var(--space-sm) 0;
+        border-bottom: 1px solid var(--glass-border);
+        font-size: 0.825rem;
+        vertical-align: middle;
+    }
+    .admin-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Badge */
+    .status-badge {
+        font-size: 0.675rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+        display: inline-block;
+        text-transform: uppercase;
+    }
+    .status-badge.active {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+    .status-badge.frozen {
+        background: rgba(244, 63, 94, 0.1);
+        color: var(--danger);
+    }
+    .status-badge.pending {
+        background: rgba(234, 179, 8, 0.1);
+        color: var(--primary);
+    }
+
+    /* Switch button styling */
+    .switch-btn {
+        padding: 4px 10px;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+    .switch-btn.freeze {
+        background: rgba(244, 63, 94, 0.15);
+        color: var(--danger);
+    }
+    .switch-btn.unfreeze {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--success);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container animate-fade-in-up">
+    <header class="header">
+        <div class="flex align-center gap-xs">
+            <a href="{{ url_for('dashboard') }}" class="back-btn" style="margin-right: var(--space-xs);">
+                <i data-feather="arrow-left"></i>
+            </a>
+            <h1><i data-feather="terminal" class="text-success" style="width: 20px; height: 20px;"></i> Control Panel</h1>
+        </div>
+        <span class="status-badge active" style="font-size: 0.575rem;">Master Server Connected</span>
+    </header>
+
+    <div class="tab-container">
+        <div class="tab active" id="tab-users" onclick="switchAdminTab('users')">Users</div>
+        <div class="tab" id="tab-transactions" onclick="switchAdminTab('transactions')">Ledger</div>
+        <div class="tab" id="tab-fraud" onclick="switchAdminTab('fraud')">Fraud Alerts</div>
+    </div>
+
+    <!-- 1. Users panel -->
+    <div id="users-panel" class="admin-card">
+        <h3 class="font-bold text-sm mb-md">Registered Users Summary</h3>
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>User Details</th>
+                        <th>Account No</th>
+                        <th>Wallet Balance</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-users-list">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. Ledger panel -->
+    <div id="transactions-panel" class="admin-card" style="display: none;">
+        <h3 class="font-bold text-sm mb-md">Global System Ledger Logs</h3>
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Account Holder</th>
+                        <th>Narration</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-transactions-list">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 3. Fraud warnings panel -->
+    <div id="fraud-panel" class="admin-card" style="display: none;">
+        <h3 class="font-bold text-sm mb-md">Active Fraud Warnings</h3>
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Holder Details</th>
+                        <th>Category</th>
+                        <th>Alert Description</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-fraud-list">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeTab = 'users';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await refreshAdminData();
+    });
+
+    async function refreshAdminData() {
+        if (activeTab === 'users') {
+            await loadAdminUsers();
+        } else if (activeTab === 'transactions') {
+            await loadAdminTransactions();
+        } else if (activeTab === 'fraud') {
+            await loadAdminFraudAlerts();
+        }
+    }
+
+    function switchAdminTab(tabName) {
+        activeTab = tabName;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+
+        document.getElementById('users-panel').style.display = tabName === 'users' ? 'block' : 'none';
+        document.getElementById('transactions-panel').style.display = tabName === 'transactions' ? 'block' : 'none';
+        document.getElementById('fraud-panel').style.display = tabName === 'fraud' ? 'block' : 'none';
+
+        refreshAdminData();
+    }
+
+    async function loadAdminUsers() {
+        try {
+            const response = await fetch('/api/admin/users');
+            const result = await response.json();
+            const list = document.getElementById('admin-users-list');
+            list.innerHTML = '';
+
+            if (!result.success || result.users.length === 0) {
+                list.innerHTML = '<tr><td colspan="5" class="text-center text-xs">No registered users in database.</td></tr>';
+                return;
+            }
+
+            result.users.forEach(u => {
+                const isFrozen = u.is_frozen === 1;
+                const statusBadge = isFrozen ? '<span class="status-badge frozen">Frozen</span>' : '<span class="status-badge active">Active</span>';
+                const actionBtn = isFrozen ? 
+                    `<button class="switch-btn unfreeze" onclick="toggleUserStatus(${u.id}, 0)">Unfreeze</button>` : 
+                    `<button class="switch-btn freeze" onclick="toggleUserStatus(${u.id}, 1)">Freeze</button>`;
+
+                list.innerHTML += `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">${u.fullname}</div>
+                            <div class="text-xs text-muted" style="margin-top: 2px;">${u.email}</div>
+                        </td>
+                        <td><code style="font-weight:600; font-size:11px;">${u.account_number}</code></td>
+                        <td style="font-weight: 600; color: var(--success);">${formatCurrency(u.balance)}</td>
+                        <td>${statusBadge}</td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        } catch(e) {
+            showToast('Failed to load users data', 'error');
+        }
+    }
+
+    async function toggleUserStatus(userId, status) {
+        try {
+            const response = await fetch('/api/admin/toggle-freeze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, status })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast(result.message, 'success');
+                await loadAdminUsers();
+            }
+        } catch (e) {
+            showToast('Action failed', 'error');
+        }
+    }
+
+    async function loadAdminTransactions() {
+        try {
+            const response = await fetch('/api/admin/transactions');
+            const result = await response.json();
+            const list = document.getElementById('admin-transactions-list');
+            list.innerHTML = '';
+
+            if (!result.success || result.transactions.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" class="text-center text-xs">Ledger is empty. No logs recorded.</td></tr>';
+                return;
+            }
+
+            result.transactions.forEach(t => {
+                const isExpense = t.type === 'expense';
+                const amtColor = isExpense ? 'var(--text-main)' : 'var(--success)';
+                const sign = isExpense ? '-' : '+';
+                
+                list.innerHTML += `
+                    <tr>
+                        <td><code style="font-size:10px;">${t.reference || 'PLK-MOCK'}</code></td>
+                        <td>
+                            <div style="font-weight: 600;">${t.fullname}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">${t.title}</div>
+                            <div class="text-xs text-muted" style="margin-top: 2px;">${t.description}</div>
+                        </td>
+                        <td><span class="status-badge active" style="background: rgba(124, 58, 237, 0.15); color: var(--primary); font-size:9px;">${t.category}</span></td>
+                        <td style="font-weight: 600; color: ${amtColor};">${sign}${formatCurrency(t.amount)}</td>
+                        <td class="text-xs text-muted">${formatRelDate(t.date)}</td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            showToast('Failed to load ledger logs', 'error');
+        }
+    }
+
+    async function loadAdminFraudAlerts() {
+        try {
+            const response = await fetch('/api/admin/fraud');
+            const result = await response.json();
+            const list = document.getElementById('admin-fraud-list');
+            list.innerHTML = '';
+
+            if (!result.success || result.alerts.length === 0) {
+                list.innerHTML = '<tr><td colspan="5" class="text-center text-xs">No active security fraud alerts.</td></tr>';
+                return;
+            }
+
+            result.alerts.forEach(a => {
+                const isPending = a.status === 'pending';
+                const statusBadge = isPending ? '<span class="status-badge pending">Pending</span>' : '<span class="status-badge active">Resolved</span>';
+                const actionBtn = isPending ? 
+                    `<button class="switch-btn unfreeze" style="background: rgba(124, 58, 237, 0.15); color: var(--primary);" onclick="resolveAlert(${a.id})">Mark Resolved</button>` : 
+                    `<span class="text-xs text-muted font-semibold">RESOLVED</span>`;
+
+                list.innerHTML += `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">${a.fullname}</div>
+                            <div class="text-xs text-muted">${a.email}</div>
+                        </td>
+                        <td><span class="status-badge frozen" style="font-size: 8px;">${a.type}</span></td>
+                        <td style="font-weight: 500; font-size:11px; max-width:180px;">${a.description}</td>
+                        <td>${statusBadge}</td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        } catch(e) {
+            showToast('Failed to load fraud alerts', 'error');
+        }
+    }
+
+    async function resolveAlert(alertId) {
+        try {
+            const response = await fetch('/api/admin/fraud/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ alert_id: alertId })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Fraud alert marked as resolved', 'success');
+                await loadAdminFraudAlerts();
+            }
+        } catch (e) {
+            showToast('Action failed', 'error');
+        }
+    }
+</script>
+{% endblock %}
+
+{% block bottom_nav %}
+<div class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-item">
+        <i data-feather="home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('cards') }}" class="nav-item">
+        <i data-feather="credit-card"></i>
+        <span>Cards</span>
+    </a>
+    <a href="{{ url_for('transfer') }}" class="nav-item">
+        <i data-feather="send"></i>
+        <span>Transfer</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item">
+        <i data-feather="clock"></i>
+        <span>History</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="nav-item">
+        <i data-feather="user"></i>
+        <span>Profile</span>
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,525 @@
+{% extends 'base.html' %}
+
+{% block title %}Virtual Cards{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cards-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .back-btn {
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* 3D Glass Card */
+    .card-wrapper {
+        perspective: 1000px;
+        margin-bottom: var(--space-xl);
+    }
+    .credit-card {
+        width: 100%;
+        height: 220px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%), 
+                    radial-gradient(circle at top right, var(--secondary), var(--primary));
+        border-radius: var(--radius-md);
+        padding: var(--space-md) var(--space-lg);
+        color: white;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .credit-card.frozen {
+        filter: grayscale(0.8) contrast(0.9);
+    }
+    .credit-card.frozen::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+    }
+    .freeze-watermark {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.5rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+    .credit-card.frozen .freeze-watermark {
+        display: flex;
+    }
+    .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        z-index: 2;
+    }
+    .card-type {
+        font-weight: 700;
+        font-size: 1.125rem;
+        letter-spacing: 0.05em;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .card-chip {
+        width: 45px;
+        height: 35px;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        border-radius: 6px;
+        position: relative;
+        box-shadow: inset 0 1px 1px rgba(255,255,255,0.5);
+    }
+    .card-middle {
+        margin: var(--space-sm) 0;
+        z-index: 2;
+    }
+    .card-number {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.5rem;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        word-spacing: 0.1em;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .card-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        z-index: 2;
+    }
+    .card-label {
+        font-size: 0.625rem;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 2px;
+        letter-spacing: 0.05em;
+    }
+    .card-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .card-actions-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-xl);
+    }
+
+    /* Modal dialog */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-md);
+    }
+    .modal-content {
+        background: var(--surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 400px;
+        padding: var(--space-lg);
+        box-shadow: var(--shadow-lg);
+        animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+    .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+
+    /* Empty state */
+    .empty-card-state {
+        text-align: center;
+        padding: var(--space-xl) var(--space-md);
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        border: 2px dashed var(--glass-border);
+        margin-bottom: var(--space-lg);
+        color: var(--text-muted);
+    }
+
+    /* Simulator Styling */
+    .simulator-card {
+        background: rgba(124, 58, 237, 0.05);
+        border: 1px solid rgba(124, 58, 237, 0.2);
+    }
+    .sim-tag {
+        background: rgba(124, 58, 237, 0.1);
+        color: var(--primary);
+        font-size: 0.675rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: var(--space-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cards-container animate-fade-in-up">
+    <header class="header">
+        <a href="{{ url_for('dashboard') }}" class="back-btn">
+            <i data-feather="arrow-left"></i>
+        </a>
+        <h1>Virtual Cards</h1>
+    </header>
+
+    <!-- Cards Display Area -->
+    <div id="cards-display-container">
+        <!-- Javascript will inject dynamic virtual cards -->
+        <div class="empty-card-state" id="empty-state">
+            <i data-feather="credit-card" style="width: 48px; height: 48px; margin-bottom: var(--space-sm); opacity: 0.5;"></i>
+            <p class="font-bold mb-xs">No Active Virtual Cards</p>
+            <p class="text-xs mb-md">Generate a secure dynamic Mastercard to simulate premium merchant checkouts worldwide.</p>
+            <button class="btn btn-primary" onclick="openCreateCardModal()" style="max-width: 240px; margin: 0 auto;">
+                <i data-feather="plus" style="margin-right: 6px;"></i> Create Virtual Card
+            </button>
+        </div>
+    </div>
+
+    <!-- Active Card Controls -->
+    <div id="card-controls-panel" style="display: none;">
+        <div class="card-actions-row">
+            <button class="btn btn-outline" id="freeze-btn" onclick="handleCardFreezeToggle()">
+                <i data-feather="lock" style="margin-right: 6px;"></i> Freeze Card
+            </button>
+            <button class="btn btn-primary" onclick="openCreateCardModal()">
+                <i data-feather="plus" style="margin-right: 6px;"></i> Create Card
+            </button>
+        </div>
+
+        <!-- Premium Merchant Checkout Simulator -->
+        <div class="glass-card simulator-card mb-lg">
+            <span class="sim-tag"><i data-feather="cpu" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 2px;"></i> Merchant Payment Simulator</span>
+            <h3 class="font-bold text-sm mb-xs">Simulate Online Purchase</h3>
+            <p class="text-xs text-muted mb-md">Test card logic by executing custom transactions at mock vendors like Netflix or Spotify.</p>
+            
+            <form id="simulator-form" onsubmit="handleCardSimulation(event)">
+                <div class="input-group">
+                    <label class="input-label" for="merchant">Online Merchant</label>
+                    <select id="merchant" class="input-field" style="background-color: var(--surface); color: var(--text-main); border: 1px solid var(--glass-border);" required>
+                        <option value="Netflix Premium">Netflix Premium (₦4,400.00)</option>
+                        <option value="Spotify Family">Spotify Premium (₦1,200.00)</option>
+                        <option value="Amazon Web Services">Amazon Web Services (₦15,000.00)</option>
+                        <option value="App Store Billing">Apple App Store (₦2,500.00)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="sim-amount">Custom Amount (₦)</label>
+                    <input type="number" id="sim-amount" class="input-field" placeholder="Or enter custom amount (Leave blank for default option)">
+                </div>
+                <button type="submit" class="btn btn-primary" id="sim-btn">Process Mock Charge</button>
+            </form>
+        </div>
+
+        <!-- Card Transaction Records -->
+        <h3 class="section-title">Card Transaction Ledger</h3>
+        <div id="card-txns-list" class="transaction-list">
+            <!-- Dynamic list of simulated card expenses -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog for Creating Card -->
+<div class="modal" id="create-card-modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeCreateCardModal()"><i data-feather="x"></i></button>
+        <h2 class="text-xl font-bold mb-xs">Generate Virtual Card</h2>
+        <p class="text-xs text-muted mb-md">Deducts funding balance directly from your main wallet ledger to provision the card.</p>
+        
+        <form onsubmit="handleCreateCard(event)">
+            <div class="input-group">
+                <label class="input-label" for="fund-amount">Allocated Funding Amount (₦)</label>
+                <input type="number" id="fund-amount" class="input-field" placeholder="Minimum ₦2,000" min="2000" required>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label" for="card-pin">4-Digit Security PIN</label>
+                <input type="password" id="card-pin" class="input-field" placeholder="Enter your transaction PIN" maxlength="4" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary mt-sm" id="create-btn">Verify & Create</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeCard = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadCards();
+    });
+
+    async function loadCards() {
+        const cards = await fetchUserCards();
+        const display = document.getElementById('cards-display-container');
+        const empty = document.getElementById('empty-state');
+        const panel = document.getElementById('card-controls-panel');
+        
+        if (cards.length === 0) {
+            display.innerHTML = '';
+            display.appendChild(empty);
+            panel.style.display = 'none';
+            return;
+        }
+
+        activeCard = cards[0]; // Set first card as active
+        
+        // Render 3D card
+        const cardNum = activeCard.card_number;
+        const formattedNum = `${cardNum.substring(0,4)} ${cardNum.substring(4,8)} ${cardNum.substring(8,12)} ${cardNum.substring(12)}`;
+        const isFrozen = activeCard.is_frozen === 1;
+
+        display.innerHTML = `
+            <div class="card-wrapper">
+                <div class="credit-card ${isFrozen ? 'frozen' : ''}" id="virtual-credit-card">
+                    <div class="freeze-watermark">Frozen</div>
+                    <div class="card-top">
+                        <span class="card-type">Mastercard</span>
+                        <div class="card-chip"></div>
+                    </div>
+                    <div class="card-middle">
+                        <div class="card-number">
+                            <span>${formattedNum}</span>
+                            <i data-feather="copy" style="width: 16px; height: 16px; cursor: pointer; color: rgba(255,255,255,0.7);" onclick="copyCardDetails('${cardNum}')"></i>
+                        </div>
+                    </div>
+                    <div class="card-bottom">
+                        <div>
+                            <div class="card-label">Card Holder</div>
+                            <div class="card-value">${activeCard.card_holder}</div>
+                        </div>
+                        <div style="text-align: right; margin-right: 20px;">
+                            <div class="card-label">Expires</div>
+                            <div class="card-value">${activeCard.expiry_date}</div>
+                        </div>
+                        <div>
+                            <div class="card-label">CVV</div>
+                            <div class="card-value">${activeCard.cvv}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card mb-md flex justify-between align-center">
+                <div>
+                    <p class="text-xs text-muted">Virtual Card Balance</p>
+                    <h2 class="font-bold text-xl">${formatCurrency(activeCard.balance)}</h2>
+                </div>
+                <i data-feather="shield" class="text-success" style="width: 24px; height: 24px;"></i>
+            </div>
+        `;
+        
+        // Update Freeze button label
+        const freezeBtn = document.getElementById('freeze-btn');
+        if (isFrozen) {
+            freezeBtn.innerHTML = '<i data-feather="unlock" style="margin-right: 6px;"></i> Unfreeze Card';
+            freezeBtn.classList.remove('btn-outline');
+            freezeBtn.style.background = 'rgba(16, 185, 129, 0.1)';
+            freezeBtn.style.color = 'var(--success)';
+            freezeBtn.style.border = '1px solid var(--success)';
+        } else {
+            freezeBtn.innerHTML = '<i data-feather="lock" style="margin-right: 6px;"></i> Freeze Card';
+            freezeBtn.classList.add('btn-outline');
+            freezeBtn.style.background = 'transparent';
+            freezeBtn.style.color = 'var(--secondary)';
+            freezeBtn.style.border = '2px solid var(--secondary)';
+        }
+        
+        panel.style.display = 'block';
+        feather.replace();
+        
+        await renderCardTransactions();
+    }
+
+    function copyCardDetails(num) {
+        navigator.clipboard.writeText(num);
+        showToast('Card number copied to clipboard!', 'success');
+    }
+
+    function openCreateCardModal() {
+        document.getElementById('create-card-modal').style.display = 'flex';
+    }
+
+    function closeCreateCardModal() {
+        document.getElementById('create-card-modal').style.display = 'none';
+    }
+
+    async function handleCreateCard(event) {
+        event.preventDefault();
+        const amount = parseFloat(document.getElementById('fund-amount').value);
+        const pin = document.getElementById('card-pin').value;
+        const btn = document.getElementById('create-btn');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i data-feather="loader" class="spin"></i> Verifying PIN...';
+        feather.replace();
+
+        const success = await createVirtualCard(amount, pin);
+        btn.disabled = false;
+        btn.innerHTML = 'Verify & Create';
+
+        if (success) {
+            closeCreateCardModal();
+            await loadCards();
+        }
+    }
+
+    async function handleCardFreezeToggle() {
+        if (!activeCard) return;
+        const currentStatus = activeCard.is_frozen;
+        const nextStatus = currentStatus === 1 ? 0 : 1;
+        
+        const success = await toggleCardFreeze(activeCard.id, nextStatus);
+        if (success) {
+            await loadCards();
+        }
+    }
+
+    async function handleCardSimulation(event) {
+        event.preventDefault();
+        if (!activeCard) return;
+        
+        const select = document.getElementById('merchant');
+        const customAmt = document.getElementById('sim-amount').value;
+        let amount = 0;
+        let merchant = select.value;
+        
+        if (customAmt) {
+            amount = parseFloat(customAmt);
+            merchant = "Online Checkout";
+        } else {
+            if (select.selectedIndex === 0) amount = 4400.00;
+            else if (select.selectedIndex === 1) amount = 1200.00;
+            else if (select.selectedIndex === 2) amount = 15000.00;
+            else if (select.selectedIndex === 3) amount = 2500.00;
+        }
+
+        const simBtn = document.getElementById('sim-btn');
+        simBtn.disabled = true;
+        simBtn.innerHTML = '<i data-feather="loader" class="spin"></i> Securing transaction...';
+        feather.replace();
+
+        const success = await simulateCardTransaction(activeCard.id, amount, merchant);
+        simBtn.disabled = false;
+        simBtn.innerHTML = 'Process Mock Charge';
+        feather.replace();
+
+        if (success) {
+            document.getElementById('sim-amount').value = '';
+            await loadCards();
+        }
+    }
+
+    async function renderCardTransactions() {
+        if (!activeCard) return;
+        const txns = await fetchCardTransactions(activeCard.id);
+        const list = document.getElementById('card-txns-list');
+        
+        if (txns.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state" style="padding: var(--space-md); text-align: center;">
+                    <p class="text-xs">No simulated transaction records found.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        txns.forEach(t => {
+            const isApproved = t.status === 'approved';
+            html += `
+                <div class="transaction-item">
+                    <div class="txn-left">
+                        <div class="txn-icon" style="background: rgba(124, 58, 237, 0.1); color: var(--primary);"><i data-feather="shopping-bag"></i></div>
+                        <div class="txn-details">
+                            <h4>${t.merchant}</h4>
+                            <p>${formatRelDate(t.date)}</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="txn-amount expense" style="color: var(--danger); font-weight: 600;">-${formatCurrency(t.amount)}</div>
+                        <div class="text-xs font-semibold" style="color: ${isApproved ? 'var(--success)' : 'var(--danger)'}; text-transform: uppercase;">${t.status}</div>
+                    </div>
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+        feather.replace();
+    }
+</script>
+{% endblock %}
+
+{% block bottom_nav %}
+<div class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-item">
+        <i data-feather="home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('cards') }}" class="nav-item active">
+        <i data-feather="credit-card"></i>
+        <span>Cards</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item">
+        <i data-feather="clock"></i>
+        <span>History</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="nav-item">
+        <i data-feather="user"></i>
+        <span>Profile</span>
+    </a>
+</div>
+{% endblock %}

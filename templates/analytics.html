@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+
+{% block title %}Spending Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .back-btn {
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Summary cards grid */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-lg);
+    }
+    .summary-card {
+        padding: var(--space-sm) var(--space-md);
+        border-radius: var(--radius-md);
+    }
+    .summary-card.inflow {
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .summary-card.outflow {
+        background: rgba(244, 63, 94, 0.05);
+        border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+    .summary-card p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+    }
+    .summary-card h3 {
+        font-size: 1.125rem;
+        font-weight: 700;
+    }
+    .summary-card.inflow h3 { color: var(--success); }
+    .summary-card.outflow h3 { color: var(--danger); }
+
+    /* Category list */
+    .category-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+        padding: var(--space-sm) var(--space-md);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--glass-border);
+        margin-bottom: var(--space-xs);
+    }
+    .category-left {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        flex: 1;
+    }
+    .category-bar-wrapper {
+        flex: 1;
+        margin: 0 var(--space-md);
+    }
+    .category-bar-bg {
+        width: 100%;
+        height: 6px;
+        background: var(--glass-border);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+    }
+    .category-bar-fill {
+        height: 100%;
+        border-radius: var(--radius-full);
+        transition: width 0.6s ease;
+    }
+    .category-info h4 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+    .category-info p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    /* Chart Card */
+    .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-md);
+        margin-bottom: var(--space-lg);
+        box-shadow: var(--shadow-sm);
+    }
+    .chart-container {
+        width: 100%;
+        height: 200px;
+        position: relative;
+    }
+</style>
+<!-- Include Chart.js from CDN for high-fidelity visual charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container animate-fade-in-up">
+    <header class="header">
+        <a href="{{ url_for('dashboard') }}" class="back-btn">
+            <i data-feather="arrow-left"></i>
+        </a>
+        <h1>Spending Analytics</h1>
+    </header>
+
+    <!-- Monthly Summary breakdown -->
+    <div class="summary-grid">
+        <div class="summary-card inflow">
+            <p><i data-feather="arrow-down-left" style="width: 12px; height: 12px; vertical-align: middle;"></i> Total Inflow</p>
+            <h3 id="total-inflow">₦0.00</h3>
+        </div>
+        <div class="summary-card outflow">
+            <p><i data-feather="arrow-up-right" style="width: 12px; height: 12px; vertical-align: middle;"></i> Total Outflow</p>
+            <h3 id="total-outflow">₦0.00</h3>
+        </div>
+    </div>
+
+    <!-- Gorgeous Visual Chart Card -->
+    <div class="chart-card">
+        <div class="flex justify-between align-center mb-md">
+            <h3 class="font-bold text-sm">Monthly Expenditure Overview</h3>
+            <span class="text-xs text-muted" id="chart-date">May 2026</span>
+        </div>
+        <div class="chart-container">
+            <canvas id="spending-chart"></canvas>
+        </div>
+    </div>
+
+    <!-- Category breakdowns -->
+    <h3 class="section-title">Spending by Category</h3>
+    <div id="category-distribution-container">
+        <!-- Javascript will inject categories dynamic summaries -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadAnalytics();
+    });
+
+    async function loadAnalytics() {
+        const txns = await getTransactions();
+        
+        let inflowSum = 0;
+        let outflowSum = 0;
+        
+        // Categorized expenses
+        const categoryData = {
+            'transfer': { amount: 0, color: '#7c3aed', icon: 'send', label: 'Transfers' },
+            'cards': { amount: 0, color: '#06b6d4', icon: 'credit-card', label: 'Cards' },
+            'airtime': { amount: 0, color: '#eab308', icon: 'phone', label: 'Airtime' },
+            'data': { amount: 0, color: '#3b82f6', icon: 'wifi', label: 'Data Bundles' },
+            'electricity': { amount: 0, color: '#f97316', icon: 'zap', label: 'Electricity' },
+            'tv': { amount: 0, color: '#ec4899', icon: 'tv', label: 'TV Subscription' },
+            'deposit': { amount: 0, color: '#10b981', icon: 'plus', label: 'Deposits' }
+        };
+
+        txns.forEach(t => {
+            const isExpense = t.type === 'expense';
+            const amount = parseFloat(t.amount);
+            
+            if (isExpense) {
+                outflowSum += amount;
+                const cat = t.category || 'transfer';
+                if (categoryData[cat]) {
+                    categoryData[cat].amount += amount;
+                } else {
+                    categoryData['transfer'].amount += amount; // Fallback
+                }
+            } else {
+                inflowSum += amount;
+            }
+        });
+
+        // Set summaries
+        document.getElementById('total-inflow').textContent = formatCurrency(inflowSum);
+        document.getElementById('total-outflow').textContent = formatCurrency(outflowSum);
+
+        // Render categories list progress meters
+        const catContainer = document.getElementById('category-distribution-container');
+        catContainer.innerHTML = '';
+
+        let hasExpenses = false;
+        const sortedCats = Object.keys(categoryData)
+            .filter(c => c !== 'deposit' && categoryData[c].amount > 0)
+            .sort((a,b) => categoryData[b].amount - categoryData[a].amount);
+
+        if (sortedCats.length === 0) {
+            catContainer.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: var(--space-xl);">
+                    <i data-feather="pie-chart" style="width: 40px; height: 40px; margin-bottom: 8px; opacity: 0.5;"></i>
+                    <p class="text-xs">No expenditure records yet.</p>
+                </div>
+            `;
+            feather.replace();
+            renderChart([0,0,0,0,0], ['No Data']);
+            return;
+        }
+
+        sortedCats.forEach(c => {
+            const data = categoryData[c];
+            const pct = outflowSum > 0 ? (data.amount / outflowSum * 100).toFixed(0) : 0;
+            
+            const catItem = document.createElement('div');
+            catItem.className = 'category-card';
+            catItem.innerHTML = `
+                <div class="category-left">
+                    <div class="menu-icon" style="background: ${data.color}15; color: ${data.color}; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-feather="${data.icon}"></i>
+                    </div>
+                    <div class="category-info" style="flex: 1; margin-left: 12px;">
+                        <div class="flex justify-between align-center">
+                            <h4>${data.label}</h4>
+                            <span class="text-xs font-semibold">${pct}%</span>
+                        </div>
+                        <div class="category-bar-wrapper" style="margin: 6px 0 0 0;">
+                            <div class="category-bar-bg">
+                                <div class="category-bar-fill" style="width: ${pct}%; background-color: ${data.color};"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="font-bold text-sm" style="margin-left: var(--space-md);">${formatCurrency(data.amount)}</div>
+            `;
+            catContainer.appendChild(catItem);
+        });
+        feather.replace();
+
+        // Prepare chart data
+        const chartLabels = sortedCats.map(c => categoryData[c].label);
+        const chartValues = sortedCats.map(c => categoryData[c].amount);
+        const chartColors = sortedCats.map(c => categoryData[c].color);
+
+        renderChart(chartValues, chartLabels, chartColors);
+    }
+
+    let activeChartInstance = null;
+    function renderChart(values, labels, colors) {
+        const ctx = document.getElementById('spending-chart').getContext('2d');
+        
+        if (activeChartInstance) {
+            activeChartInstance.destroy();
+        }
+
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const labelColor = isLight ? '#64748b' : '#94a3b8';
+        const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+
+        activeChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors || ['#7c3aed', '#06b6d4', '#eab308', '#3b82f6', '#f97316'],
+                    borderWidth: 2,
+                    borderColor: isLight ? '#ffffff' : '#1e293b'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: labelColor,
+                            font: {
+                                family: 'Inter',
+                                size: 10
+                            },
+                            boxWidth: 10
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+</script>
+{% endblock %}
+
+{% block bottom_nav %}
+<div class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-item">
+        <i data-feather="home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('cards') }}" class="nav-item">
+        <i data-feather="credit-card"></i>
+        <span>Cards</span>
+    </a>
+    <a href="{{ url_for('transfer') }}" class="nav-item">
+        <i data-feather="send"></i>
+        <span>Transfer</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item">
+        <i data-feather="clock"></i>
+        <span>History</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="nav-item">
+        <i data-feather="user"></i>
+        <span>Profile</span>
+    </a>
+</div>
+{% endblock %}
