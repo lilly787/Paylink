@@ -120,6 +120,39 @@
     .toggle-switch.active::after {
         transform: translateX(20px);
     }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-md);
+    }
+    .modal-content {
+        background: var(--surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 360px;
+        padding: var(--space-lg);
+        box-shadow: var(--shadow-lg);
+        animation: fadeInUp 0.4s ease;
+        position: relative;
+    }
+    .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+    }
 </style>
 {% endblock %}
 
@@ -139,7 +172,7 @@
     </div>
 
     <div class="setting-group">
-        <div class="setting-item" onclick="comingSoon('Change PIN')">
+        <div class="setting-item" onclick="openChangePinModal()">
             <div class="setting-left">
                 <div class="setting-icon"><i data-feather="key"></i></div>
                 <div class="setting-text">
@@ -184,4 +217,90 @@
         </div>
     </div>
 </div>
+
+<!-- Change PIN Modal -->
+<div class="modal" id="change-pin-modal">
+    <div class="modal-content text-center">
+        <button class="modal-close" onclick="closeChangePinModal()"><i data-feather="x"></i></button>
+        <div style="color: var(--primary); margin-bottom: var(--space-sm);">
+            <i data-feather="key" style="width: 40px; height: 40px;"></i>
+        </div>
+        <h2 class="text-xl font-bold mb-xs">Change Transaction PIN</h2>
+        <p class="text-xs text-muted mb-md">Secure your outgoing transfers with a new 4-digit transaction PIN.</p>
+        
+        <form id="change-pin-form" onsubmit="handleChangePin(event)">
+            <div class="input-group" style="text-align: center;">
+                <label class="input-label" for="old-pin">Current 4-Digit PIN</label>
+                <input type="password" id="old-pin" class="input-field text-center" placeholder="••••" maxlength="4" style="letter-spacing: 0.5em; font-size: 1.25rem; max-width: 150px; margin: 0 auto; background-color: rgba(0,0,0,0.15);" required>
+            </div>
+            <div class="input-group" style="text-align: center;">
+                <label class="input-label" for="new-pin">New 4-Digit PIN</label>
+                <input type="password" id="new-pin" class="input-field text-center" placeholder="••••" maxlength="4" style="letter-spacing: 0.5em; font-size: 1.25rem; max-width: 150px; margin: 0 auto; background-color: rgba(0,0,0,0.15);" required>
+            </div>
+            <button type="submit" class="btn btn-primary mt-sm" id="pin-change-submit">Update PIN</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openChangePinModal() {
+        document.getElementById('change-pin-modal').style.display = 'flex';
+        document.getElementById('old-pin').value = '';
+        document.getElementById('new-pin').value = '';
+    }
+
+    function closeChangePinModal() {
+        document.getElementById('change-pin-modal').style.display = 'none';
+    }
+
+    async function handleChangePin(event) {
+        event.preventDefault();
+        const oldPin = document.getElementById('old-pin').value;
+        const newPin = document.getElementById('new-pin').value;
+
+        if (oldPin.length !== 4 || newPin.length !== 4) {
+            showToast('PIN must be exactly 4 digits', 'warning');
+            return;
+        }
+
+        const isCorrect = await verifyPin(oldPin);
+        if (!isCorrect) {
+            showToast('Current PIN is incorrect!', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('pin-change-submit');
+        btn.disabled = true;
+        btn.innerHTML = '<i data-feather="loader" class="spin"></i> Updating...';
+        feather.replace();
+
+        const user = getUser();
+        try {
+            const response = await fetch('/api/security/setup-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: user.id, pin: newPin })
+            });
+            const result = await response.json();
+            btn.disabled = false;
+            btn.innerHTML = 'Update PIN';
+            feather.replace();
+
+            if (result.success) {
+                localStorage.setItem('paylink_user', JSON.stringify(result.user));
+                showToast('Transaction PIN updated successfully!', 'success');
+                closeChangePinModal();
+            } else {
+                showToast('Failed to update PIN', 'error');
+            }
+        } catch(e) {
+            btn.disabled = false;
+            btn.innerHTML = 'Update PIN';
+            feather.replace();
+            showToast('Server error', 'error');
+        }
+    }
+</script>
 {% endblock %}
