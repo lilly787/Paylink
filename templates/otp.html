@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify OTP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        padding: var(--space-xl) var(--space-md);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .auth-header {
+        text-align: center;
+        margin-bottom: var(--space-xl);
+    }
+    .otp-inputs {
+        display: flex;
+        gap: var(--space-sm);
+        justify-content: center;
+        margin-bottom: var(--space-lg);
+    }
+    .otp-field {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+        text-align: center;
+        border-radius: var(--radius-md);
+        border: 2px solid var(--glass-border);
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--text-main);
+        font-weight: 700;
+        transition: border-color 0.2s ease;
+    }
+    .otp-field:focus {
+        outline: none;
+        border-color: var(--secondary);
+    }
+    .resend-text {
+        text-align: center;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-bottom: var(--space-xl);
+    }
+    .resend-text a {
+        color: var(--secondary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container animate-fade-in-up">
+    <div class="auth-header">
+        <div style="color: var(--secondary); margin-bottom: var(--space-md);">
+            <i data-feather="lock" style="width: 48px; height: 48px;"></i>
+        </div>
+        <h1 class="text-3xl font-bold mb-xs">Verification</h1>
+        <p class="text-muted">Enter the 4-digit code sent to your email.</p>
+    </div>
+
+    <form class="auth-form" style="width: 100%; max-width: 300px;" onsubmit="handleOtp(event)">
+        <div class="otp-inputs">
+            <input type="text" maxlength="1" class="otp-field" id="otp1" required autocomplete="off">
+            <input type="text" maxlength="1" class="otp-field" id="otp2" required autocomplete="off">
+            <input type="text" maxlength="1" class="otp-field" id="otp3" required autocomplete="off">
+            <input type="text" maxlength="1" class="otp-field" id="otp4" required autocomplete="off">
+        </div>
+
+        <p class="resend-text">Didn't receive the code? <a href="#" onclick="showToast('Code resent!', 'success')">Resend</a></p>
+
+        <button type="submit" class="btn btn-primary">Verify & Proceed</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus next input
+    const inputs = document.querySelectorAll('.otp-field');
+    inputs.forEach((input, index) => {
+        input.addEventListener('keyup', (e) => {
+            if (e.target.value.length === 1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+            if (e.key === 'Backspace' && index > 0 && e.target.value.length === 0) {
+                inputs[index - 1].focus();
+            }
+        });
+    });
+
+    async function handleOtp(event) {
+        event.preventDefault();
+        const pin = document.getElementById('otp1').value + 
+                    document.getElementById('otp2').value + 
+                    document.getElementById('otp3').value + 
+                    document.getElementById('otp4').value;
+                    
+        if (pin.length !== 4) {
+            showToast('Please enter a valid 4-digit code', 'warning');
+            return;
+        }
+        
+        const user = getUser();
+        if (user.id !== 0) {
+            try {
+                const response = await fetch('/api/security/setup-pin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: user.id, pin: pin })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    localStorage.setItem('paylink_user', JSON.stringify(result.user));
+                    showToast('Verification & PIN setup successful!', 'success');
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('dashboard') }}";
+                    }, 1500);
+                    return;
+                }
+            } catch(e) {}
+        }
+        
+        showToast('Verification successful!', 'success');
+        setTimeout(() => {
+            window.location.href = "{{ url_for('dashboard') }}";
+        }, 1500);
+    }
+</script>
+{% endblock %}

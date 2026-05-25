@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        padding: var(--space-xl) var(--space-md);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        color: var(--text-main);
+        text-decoration: none;
+        margin-bottom: var(--space-lg);
+        font-weight: 500;
+    }
+    .back-btn i {
+        margin-right: 0.5rem;
+    }
+    .auth-header {
+        margin-bottom: var(--space-xl);
+    }
+    .auth-form {
+        flex: 1;
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: var(--space-xl);
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+    .auth-footer a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container animate-fade-in-up">
+    <a href="{{ url_for('onboarding') }}" class="back-btn">
+        <i data-feather="arrow-left"></i> Back
+    </a>
+
+    <div class="auth-header">
+        <h1 class="text-3xl font-bold mb-xs">Create Account</h1>
+        <p class="text-muted">Join Paylink and take control of your finances</p>
+    </div>
+
+    <form class="auth-form" id="register-form" onsubmit="handleRegister(event)">
+        <div class="input-group">
+            <label class="input-label" for="fullname">Full Name</label>
+            <input type="text" id="fullname" class="input-field" placeholder="e.g. John Doe" required>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label" for="email">Email Address</label>
+            <input type="email" id="email" class="input-field" placeholder="name@example.com" required>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label" for="phone">Phone Number</label>
+            <input type="tel" id="phone" class="input-field" placeholder="+1 (555) 000-0000" required>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label" for="password">Password</label>
+            <input type="password" id="password" class="input-field" placeholder="Create a strong password" required>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label" for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" class="input-field" placeholder="Confirm your password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-sm">Register</button>
+    </form>
+
+    <div class="auth-footer">
+        Already have an account? <a href="{{ url_for('login') }}">Log In</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function handleRegister(event) {
+        event.preventDefault();
+        const fullname = document.getElementById('fullname').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+        const password = document.getElementById('password').value;
+        const confirm_password = document.getElementById('confirm_password').value;
+        
+        if (password !== confirm_password) {
+            showToast('Passwords do not match!', 'error');
+            return;
+        }
+        
+        // Registers user. Their OTP entry in the next screen will act as defining their custom Transaction PIN!
+        const success = await registerUser(fullname, email, phone, password, '1234');
+        if (success) {
+            window.location.href = "{{ url_for('otp') }}";
+        }
+    }
+</script>
+{% endblock %}

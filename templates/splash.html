@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block extra_css %}
+<style>
+    .splash-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+    }
+    .logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    .app-name {
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        margin-bottom: 0.5rem;
+    }
+    .loading-text {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="splash-container">
+    <div class="logo-container animate-pulse-slow">
+        <i data-feather="link-2" style="width: 40px; height: 40px; color: white;"></i>
+    </div>
+    <h1 class="app-name animate-fade-in-up">Paylink</h1>
+    <p class="loading-text animate-fade-in-up" style="animation-delay: 0.2s;">Secure Banking. Loading...</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    setTimeout(() => {
+        window.location.href = "{{ url_for('onboarding') }}";
+    }, 2500);
+</script>
+{% endblock %}

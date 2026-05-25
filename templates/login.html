@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        padding: var(--space-xl) var(--space-md);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        color: var(--text-main);
+        text-decoration: none;
+        margin-bottom: var(--space-lg);
+        font-weight: 500;
+    }
+    .back-btn i {
+        margin-right: 0.5rem;
+    }
+    .auth-header {
+        margin-bottom: var(--space-xl);
+    }
+    .auth-form {
+        flex: 1;
+    }
+    .forgot-password {
+        text-align: right;
+        margin-bottom: var(--space-md);
+    }
+    .forgot-password a {
+        color: var(--primary);
+        font-size: 0.875rem;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: var(--space-md);
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: var(--space-xl);
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+    .auth-footer a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container animate-fade-in-up">
+    <a href="{{ url_for('onboarding') }}" class="back-btn">
+        <i data-feather="arrow-left"></i> Back
+    </a>
+
+    <div class="auth-header">
+        <h1 class="text-3xl font-bold mb-xs">Welcome Back</h1>
+        <p class="text-muted">Sign in to your Paylink account</p>
+    </div>
+
+    <form class="auth-form" id="login-form" onsubmit="handleLogin(event)">
+        <div class="input-group">
+            <label class="input-label" for="identifier">Email or Phone Number</label>
+            <input type="text" id="identifier" class="input-field" placeholder="Enter email or phone" required>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label" for="password">Password</label>
+            <input type="password" id="password" class="input-field" placeholder="Enter your password" required>
+        </div>
+
+        <div class="flex justify-between align-center mb-md">
+            <label class="remember-me" style="margin-bottom: 0;">
+                <input type="checkbox"> Remember me
+            </label>
+            <div class="forgot-password" style="margin-bottom: 0;">
+                <a href="#">Forgot Password?</a>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-sm">Log In</button>
+    </form>
+
+    <div class="auth-footer">
+        Don't have an account? <a href="{{ url_for('register') }}">Sign Up</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function handleLogin(event) {
+        event.preventDefault();
+        const identifier = document.getElementById('identifier').value;
+        const password = document.getElementById('password').value;
+        
+        const success = await loginUser(identifier, password);
+        if (success) {
+            window.location.href = "{{ url_for('otp') }}";
+        }
+    }
+    
+    // Check if account frozen parameter is in URL
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('msg') === 'frozen') {
+            showToast('This account has been frozen by administration.', 'error');
+        }
+    });
+</script>
+{% endblock %}
