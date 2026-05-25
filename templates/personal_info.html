@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Personal Information{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-xl);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .back-btn {
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .info-card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+        border: 1px solid var(--glass-border);
+    }
+
+    .info-row {
+        margin-bottom: var(--space-md);
+        padding-bottom: var(--space-md);
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .info-row:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="info-container animate-fade-in-up">
+    <header class="header">
+        <a href="{{ url_for('profile') }}" class="back-btn">
+            <i data-feather="arrow-left"></i>
+        </a>
+        <h1>Personal Info</h1>
+    </header>
+
+    <div class="info-card">
+        <div class="info-row">
+            <div class="info-label">Full Name</div>
+            <div class="info-value" id="info-name">Loading...</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Email Address</div>
+            <div class="info-value" id="info-email">Loading...</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Phone Number</div>
+            <div class="info-value" id="info-phone">Loading...</div>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-row">
+            <div class="info-label">Account Tier</div>
+            <div class="info-value" style="color: var(--primary);">Tier 3 (Verified)</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Transaction Limit</div>
+            <div class="info-value">₦5,000,000 / day</div>
+        </div>
+    </div>
+
+    <button class="btn btn-outline mt-md" onclick="comingSoon('Edit Profile')">
+        <i data-feather="edit-2" style="margin-right: 8px;"></i> Edit Profile
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        let user = getUser();
+        user = await refreshUser();
+        
+        document.getElementById('info-name').textContent = user.fullname;
+        document.getElementById('info-email').textContent = user.email;
+        document.getElementById('info-phone').textContent = user.phone || 'Not provided';
+    });
+</script>
+{% endblock %}

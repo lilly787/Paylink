@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction History{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--space-md);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    
+    .search-bar {
+        position: relative;
+        margin-bottom: var(--space-md);
+    }
+    .search-bar i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        width: 18px;
+        height: 18px;
+    }
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--glass-border);
+        background: var(--surface);
+        color: var(--text-main);
+        outline: none;
+        box-shadow: var(--shadow-sm);
+    }
+    .search-input:focus {
+        border-color: var(--secondary);
+    }
+
+    .filter-tabs {
+        display: flex;
+        gap: var(--space-xs);
+        margin-bottom: var(--space-lg);
+        overflow-x: auto;
+        padding-bottom: var(--space-xs);
+        scrollbar-width: none;
+    }
+    .filter-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .filter-tab {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        background: var(--surface);
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: pointer;
+        border: 1px solid var(--glass-border);
+        transition: all 0.2s ease;
+    }
+    .filter-tab.active {
+        background: var(--secondary);
+        color: white;
+        border-color: var(--secondary);
+    }
+
+    /* Transactions */
+    .transaction-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+    .transaction-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+        padding: var(--space-sm) var(--space-md);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--glass-border);
+    }
+    .txn-left {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+    }
+    .txn-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(124, 58, 237, 0.1);
+        color: var(--primary);
+    }
+    .txn-icon.expense {
+        background: rgba(244, 63, 94, 0.1);
+        color: var(--danger);
+    }
+    .txn-icon.income {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+    .txn-details h4 {
+        font-size: 0.875rem;
+        margin-bottom: 0.125rem;
+    }
+    .txn-details p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .txn-amount {
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    .txn-amount.expense {
+        color: var(--text-main);
+    }
+    .txn-amount.income {
+        color: var(--success);
+    }
+    .empty-state {
+        text-align: center;
+        padding: var(--space-xl) var(--space-md);
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        border: 1px dashed var(--glass-border);
+        color: var(--text-muted);
+        margin-top: var(--space-md);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container animate-fade-in-up">
+    <!-- Header -->
+    <header class="header">
+        <h1>Transactions</h1>
+        <a href="#" class="text-muted"><i data-feather="filter"></i></a>
+    </header>
+
+    <div class="search-bar">
+        <i data-feather="search"></i>
+        <input type="text" id="search-input" class="search-input" placeholder="Search transactions...">
+    </div>
+
+    <div class="filter-tabs" id="filter-tabs">
+        <div class="filter-tab active" data-filter="all">All</div>
+        <div class="filter-tab" data-filter="income">Income</div>
+        <div class="filter-tab" data-filter="expense">Expense</div>
+    </div>
+
+    <div class="transaction-list" id="transaction-list">
+        <!-- Rendered by JS -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentFilter = 'all';
+    let searchQuery = '';
+
+    async function renderTransactions() {
+        const txns = await getTransactions();
+        const list = document.getElementById('transaction-list');
+        
+        let filtered = txns;
+        
+        if (currentFilter !== 'all') {
+            filtered = filtered.filter(t => t.type === currentFilter);
+        }
+        
+        if (searchQuery) {
+            filtered = filtered.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+
+        if (filtered.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <i data-feather="inbox" style="width: 40px; height: 40px; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <p>No transactions found.</p>
+                </div>
+            `;
+            feather.replace();
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(txn => {
+            const isExpense = txn.type === 'expense';
+            const icon = isExpense ? 'arrow-up-right' : 'arrow-down-left';
+            html += `
+                <a href="/transaction_details?txn_id=${txn.id}" class="transaction-item" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <div class="txn-left">
+                        <div class="txn-icon ${isExpense ? 'expense' : 'income'}"><i data-feather="${icon}"></i></div>
+                        <div class="txn-details">
+                            <h4>${txn.title}</h4>
+                            <p>${formatRelDate(txn.date)}</p>
+                        </div>
+                    </div>
+                    <div class="txn-amount ${isExpense ? 'expense' : 'income'}">
+                        ${isExpense ? '-' : '+'}${formatCurrency(txn.amount)}
+                    </div>
+                </a>
+            `;
+        });
+        list.innerHTML = html;
+        feather.replace();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Tab clicks
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.getAttribute('data-filter');
+                renderTransactions();
+            });
+        });
+
+        // Search input
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderTransactions();
+        });
+
+        renderTransactions();
+    });
+</script>
+{% endblock %}
+
+{% block bottom_nav %}
+<div class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-item">
+        <i data-feather="home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('cards') }}" class="nav-item">
+        <i data-feather="credit-card"></i>
+        <span>Cards</span>
+    </a>
+    <a href="{{ url_for('transfer') }}" class="nav-item">
+        <i data-feather="send"></i>
+        <span>Transfer</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item active">
+        <i data-feather="clock"></i>
+        <span>History</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="nav-item">
+        <i data-feather="user"></i>
+        <span>Profile</span>
+    </a>
+</div>
+{% endblock %}

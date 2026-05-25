@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+
+{% block title %}Bills & Airtime{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bills-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .back-btn {
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Tabs */
+    .tab-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        padding: 4px;
+        margin-bottom: var(--space-lg);
+        border: 1px solid var(--glass-border);
+    }
+    .tab {
+        text-align: center;
+        padding: 0.5rem 0.25rem;
+        font-size: 0.675rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+    }
+    .tab.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    /* Provider Selection */
+    .provider-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-sm);
+        margin-bottom: var(--space-lg);
+    }
+    .provider-item {
+        background: var(--surface);
+        border: 2px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        padding: var(--space-sm);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .provider-item.active {
+        border-color: var(--secondary);
+        background: rgba(6, 182, 212, 0.05);
+    }
+    .provider-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.75rem;
+        margin-bottom: 6px;
+        box-shadow: var(--shadow-sm);
+    }
+    .provider-item span {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* Grid layout bundles */
+    .bundle-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-sm);
+        margin-top: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+    .bundle-item {
+        background: var(--surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .bundle-item.active {
+        border-color: var(--primary);
+        background: rgba(124, 58, 237, 0.05);
+    }
+    .bundle-data {
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: var(--primary);
+    }
+    .bundle-price {
+        font-size: 0.875rem;
+        color: var(--text-main);
+        font-weight: 600;
+    }
+    .bundle-validity {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    /* Modal Dialog */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-md);
+    }
+    .modal-content {
+        background: var(--surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 360px;
+        padding: var(--space-lg);
+        box-shadow: var(--shadow-lg);
+        animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+    .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bills-container animate-fade-in-up">
+    <header class="header">
+        <a href="{{ url_for('dashboard') }}" class="back-btn">
+            <i data-feather="arrow-left"></i>
+        </a>
+        <h1>Utility Payments</h1>
+    </header>
+
+    <div class="tab-container">
+        <div class="tab active" id="tab-airtime" onclick="switchTab('airtime')">Airtime</div>
+        <div class="tab" id="tab-data" onclick="switchTab('data')">Data</div>
+        <div class="tab" id="tab-electricity" onclick="switchTab('electricity')">Electricity</div>
+        <div class="tab" id="tab-tv" onclick="switchTab('tv')">Cable TV</div>
+    </div>
+
+    <!-- Provider Selection -->
+    <h3 class="font-medium text-sm mb-sm" id="provider-title">Select Operator</h3>
+    <div class="provider-grid" id="provider-grid">
+        <!-- Injected dynamically based on tab -->
+    </div>
+
+    <form id="bills-form" onsubmit="handleFormSubmission(event)">
+        <!-- Input parameters card -->
+        <div class="glass-card mb-lg">
+            <!-- Dynamic Identifier Fields -->
+            <div class="input-group" id="identifier-group" style="margin-bottom: 0;">
+                <label class="input-label" id="identifier-label" for="identifier-input">Recipient Phone</label>
+                <input type="text" id="identifier-input" class="input-field" placeholder="0801 234 5678" style="border: none; padding-left: 0; background: transparent;" required>
+            </div>
+        </div>
+
+        <!-- Airtime / Electricity Amount Input -->
+        <div id="amount-section">
+            <div class="input-group">
+                <label class="input-label" for="amount-input">Amount (₦)</label>
+                <input type="number" id="amount-input" class="input-field" placeholder="Enter amount" min="50" required>
+            </div>
+        </div>
+
+        <!-- Data / TV Package Section -->
+        <div id="bundle-section" style="display: none;">
+            <h3 class="font-medium text-sm">Select Package</h3>
+            <div class="bundle-grid" id="bundle-grid">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-md" id="pay-btn">Authorize Payment</button>
+    </form>
+</div>
+
+<!-- Transaction Authorization Modal -->
+<div class="modal" id="pin-modal">
+    <div class="modal-content text-center">
+        <button class="modal-close" onclick="closePinModal()"><i data-feather="x"></i></button>
+        <div style="color: var(--secondary); margin-bottom: var(--space-sm);">
+            <i data-feather="shield" style="width: 40px; height: 40px;"></i>
+        </div>
+        <h2 class="text-xl font-bold mb-xs">Authorize Utility</h2>
+        <p class="text-xs text-muted mb-md" id="pin-summary">Paying ₦0.00</p>
+        
+        <div class="input-group" style="text-align: center;">
+            <input type="password" id="txn-pin" class="input-field text-center" placeholder="••••" maxlength="4" style="letter-spacing: 0.5em; font-size: 1.5rem; max-width: 160px; margin: 0 auto; background-color: rgba(0,0,0,0.15);" required>
+        </div>
+        
+        <button type="button" class="btn btn-primary mt-sm" id="confirm-pin-btn" onclick="executeAuthorizedBillPayment()">Authorize Charge</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentTab = 'airtime';
+    let selectedProvider = '';
+    let selectedBundle = null;
+    let activePayload = null;
+
+    // Provider datasets
+    const providerData = {
+        airtime: [
+            { id: 'MTN', label: 'MTN', color: '#ffcc00', text: 'black' },
+            { id: 'Airtel', label: 'Airtel', color: '#ff0000', text: 'white' },
+            { id: 'Glo', label: 'Glo', color: '#009900', text: 'white' },
+            { id: '9mobile', label: '9mobile', color: '#006600', text: 'white' }
+        ],
+        electricity: [
+            { id: 'EKEDC', label: 'Eko Disco', color: '#2563eb', text: 'white' },
+            { id: 'IKEDC', label: 'Ikeja Disco', color: '#0891b2', text: 'white' },
+            { id: 'AEDC', label: 'Abuja Disco', color: '#7c3aed', text: 'white' }
+        ],
+        tv: [
+            { id: 'DSTV', label: 'DSTV', color: '#0369a1', text: 'white' },
+            { id: 'GOtv', label: 'GOtv', color: '#15803d', text: 'white' },
+            { id: 'StarTimes', label: 'StarTimes', color: '#b91c1c', text: 'white' }
+        ]
+    };
+
+    // Packages datasets
+    const packagesData = {
+        data: [
+            { id: '1GB', label: '1GB Daily', price: 300, valid: '1 Day' },
+            { id: '2GB', label: '2GB 2-Day', price: 500, valid: '2 Days' },
+            { id: '5GB', label: '5GB Weekly', price: 1500, valid: '7 Days' },
+            { id: '10GB', label: '10GB Monthly', price: 2500, valid: '30 Days' }
+        ],
+        tv: {
+            'DSTV': [
+                { id: 'compact', label: 'DStv Compact', price: 12500, valid: 'Monthly' },
+                { id: 'premium', label: 'DStv Premium', price: 29500, valid: 'Monthly' }
+            ],
+            'GOtv': [
+                { id: 'jolli', label: 'GOtv Jolli', price: 3300, valid: 'Monthly' },
+                { id: 'max', label: 'GOtv Max', price: 5300, valid: 'Monthly' }
+            ],
+            'StarTimes': [
+                { id: 'basic', label: 'Basic Bouquet', price: 3000, valid: 'Monthly' },
+                { id: 'super', label: 'Super Bouquet', price: 6500, valid: 'Monthly' }
+            ]
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initial setup
+        switchTab('airtime');
+    });
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+
+        // Render Providers grid
+        const grid = document.getElementById('provider-grid');
+        grid.innerHTML = '';
+        
+        const cat = (tab === 'data') ? 'airtime' : tab; // Data uses telco operators
+        const providers = providerData[cat];
+
+        document.getElementById('provider-title').textContent = (tab === 'electricity') ? 'Select Distribution Company' : 'Select Operator';
+
+        providers.forEach((p, index) => {
+            const item = document.createElement('div');
+            item.className = 'provider-item' + (index === 0 ? ' active' : '');
+            if (index === 0) selectedProvider = p.id;
+            
+            item.innerHTML = `
+                <div class="provider-circle" style="background: ${p.color}; color: ${p.text};">${p.id.substring(0,3).toUpperCase()}</div>
+                <span>${p.label}</span>
+            `;
+            item.onclick = () => {
+                document.querySelectorAll('.provider-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                selectedProvider = p.id;
+                
+                // If TV package tab, update packages list dynamically based on operator
+                if (currentTab === 'tv') {
+                    renderBundles();
+                }
+            };
+            grid.appendChild(item);
+        });
+
+        // Set inputs labels
+        const label = document.getElementById('identifier-label');
+        const input = document.getElementById('identifier-input');
+        
+        if (tab === 'airtime' || tab === 'data') {
+            label.textContent = 'Recipient Phone Number';
+            input.placeholder = '0801 234 5678';
+            input.type = 'tel';
+        } else if (tab === 'electricity') {
+            label.textContent = 'Meter Number';
+            input.placeholder = 'Enter 11-digit Meter Number';
+            input.type = 'number';
+        } else if (tab === 'tv') {
+            label.textContent = 'SmartCard / IUC Number';
+            input.placeholder = 'Enter SmartCard Number';
+            input.type = 'number';
+        }
+
+        // Toggle sections displays
+        const amountSec = document.getElementById('amount-section');
+        const bundleSec = document.getElementById('bundle-section');
+
+        if (tab === 'airtime' || tab === 'electricity') {
+            amountSec.style.display = 'block';
+            bundleSec.style.display = 'none';
+            document.getElementById('amount-input').required = true;
+        } else {
+            amountSec.style.display = 'none';
+            bundleSec.style.display = 'block';
+            document.getElementById('amount-input').required = false;
+            renderBundles();
+        }
+        feather.replace();
+    }
+
+    function renderBundles() {
+        const grid = document.getElementById('bundle-grid');
+        grid.innerHTML = '';
+
+        let bundles = [];
+        if (currentTab === 'data') {
+            bundles = packagesData.data;
+        } else if (currentTab === 'tv') {
+            bundles = packagesData.tv[selectedProvider] || [];
+        }
+
+        bundles.forEach((b, index) => {
+            const item = document.createElement('div');
+            item.className = 'bundle-item' + (index === 0 ? ' active' : '');
+            if (index === 0) selectedBundle = b;
+
+            item.innerHTML = `
+                <div class="bundle-data">${b.label}</div>
+                <div class="bundle-price">₦${b.price.toLocaleString()}</div>
+                <div class="bundle-validity">${b.valid}</div>
+            `;
+            item.onclick = () => {
+                document.querySelectorAll('.bundle-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                selectedBundle = b;
+            };
+            grid.appendChild(item);
+        });
+    }
+
+    // PIN modal
+    function openPinModal(summary, payload) {
+        document.getElementById('pin-summary').innerHTML = summary;
+        document.getElementById('txn-pin').value = '';
+        activePayload = payload;
+        document.getElementById('pin-modal').style.display = 'flex';
+        document.getElementById('txn-pin').focus();
+    }
+
+    function closePinModal() {
+        document.getElementById('pin-modal').style.display = 'none';
+        activePayload = null;
+    }
+
+    function handleFormSubmission(event) {
+        event.preventDefault();
+        const identifier = document.getElementById('identifier-input').value;
+        const user = getUser();
+        
+        let amount = 0;
+        let summary = '';
+        
+        if (currentTab === 'airtime' || currentTab === 'electricity') {
+            amount = parseFloat(document.getElementById('amount-input').value);
+        } else {
+            if (!selectedBundle) {
+                showToast('Please select a package first', 'warning');
+                return;
+            }
+            amount = selectedBundle.price;
+        }
+
+        if (amount > user.balance) {
+            showToast('Insufficient wallet balance', 'error');
+            return;
+        }
+
+        const payload = {
+            amount,
+            bill_type: currentTab,
+            provider: selectedProvider,
+            meter_number: (currentTab === 'electricity' || currentTab === 'tv') ? identifier : '',
+            phone: (currentTab === 'airtime' || currentTab === 'data') ? identifier : ''
+        };
+
+        if (currentTab === 'airtime') {
+            summary = `Purchase <b>₦${amount.toLocaleString()}</b> MTN/Glo Airtime for <b>${identifier}</b>`;
+        } else if (currentTab === 'data') {
+            summary = `Renew <b>${selectedBundle.label}</b> (₦${amount.toLocaleString()}) for <b>${identifier}</b>`;
+        } else if (currentTab === 'electricity') {
+            summary = `Pay <b>₦${amount.toLocaleString()}</b> to <b>${selectedProvider}</b> for Meter <b>${identifier}</b>`;
+        } else if (currentTab === 'tv') {
+            summary = `Pay <b>₦${amount.toLocaleString()}</b> for <b>${selectedBundle.label}</b> on SmartCard <b>${identifier}</b>`;
+        }
+
+        openPinModal(summary, payload);
+    }
+
+    async function executeAuthorizedBillPayment() {
+        if (!activePayload) return;
+        const pin = document.getElementById('txn-pin').value;
+        if (pin.length !== 4) {
+            showToast('PIN must be 4 digits', 'warning');
+            return;
+        }
+
+        const confirmBtn = document.getElementById('confirm-pin-btn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i data-feather="loader" class="spin" style="width: 14px; height: 14px; vertical-align: middle;"></i> Charging...';
+        feather.replace();
+
+        const res = await payBill(
+            activePayload.amount,
+            activePayload.bill_type,
+            activePayload.provider,
+            activePayload.meter_number,
+            pin,
+            activePayload.phone
+        );
+
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = 'Authorize Charge';
+        feather.replace();
+
+        if (res && res.success) {
+            showToast('Payment successful!', 'success');
+            setTimeout(() => {
+                window.location.href = `/transaction_details?txn_id=${res.txn_id}`;
+            }, 1200);
+        } else {
+            closePinModal();
+        }
+    }
+</script>
+{% endblock %}
+
+{% block bottom_nav %}
+<div class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-item">
+        <i data-feather="home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('cards') }}" class="nav-item">
+        <i data-feather="credit-card"></i>
+        <span>Cards</span>
+    </a>
+    <a href="{{ url_for('transfer') }}" class="nav-item">
+        <i data-feather="send"></i>
+        <span>Transfer</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item">
+        <i data-feather="clock"></i>
+        <span>History</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="nav-item">
+        <i data-feather="user"></i>
+        <span>Profile</span>
+    </a>
+</div>
+{% endblock %}

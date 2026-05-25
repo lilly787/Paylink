@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-bottom: var(--space-lg);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    
+    .profile-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: var(--space-xl);
+    }
+    .profile-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: var(--space-sm);
+        position: relative;
+        border: 4px solid var(--surface);
+        box-shadow: var(--shadow-md);
+    }
+    .edit-avatar {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 32px;
+        height: 32px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+    }
+    .profile-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    .profile-email {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .kyc-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: var(--space-sm);
+    }
+
+    .menu-group {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--space-md);
+        overflow: hidden;
+    }
+    .menu-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-md);
+        text-decoration: none;
+        color: var(--text-main);
+        border-bottom: 1px solid var(--glass-border);
+        transition: background-color 0.2s ease;
+    }
+    .menu-item:last-child {
+        border-bottom: none;
+    }
+    .menu-item:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    .menu-item-left {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+    }
+    .menu-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .menu-title {
+        font-weight: 500;
+        font-size: 0.9375rem;
+    }
+    .menu-item-right {
+        color: var(--text-muted);
+    }
+    
+    .logout-btn {
+        color: var(--danger);
+    }
+    .logout-btn .menu-icon {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container animate-fade-in-up">
+    <!-- Header -->
+    <header class="header">
+        <h1>Profile</h1>
+    </header>
+
+    <div class="profile-header">
+        <div class="profile-avatar" id="profile-avatar-display">
+            JD
+            <div class="edit-avatar">
+                <i data-feather="camera" style="width: 14px; height: 14px;"></i>
+            </div>
+        </div>
+        <h2 class="profile-name" id="profile-name-display">Loading...</h2>
+        <p class="profile-email" id="profile-email-display">loading@example.com</p>
+        <div class="kyc-badge">
+            <i data-feather="check-circle" style="width: 12px; height: 12px;"></i>
+            Verified
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <a href="{{ url_for('personal_info') }}" class="menu-item" style="text-decoration: none; color: inherit;">
+            <div class="menu-item-left">
+                <div class="menu-icon"><i data-feather="user"></i></div>
+                <span class="menu-title">Personal Information</span>
+            </div>
+            <div class="menu-item-right"><i data-feather="chevron-right"></i></div>
+        </a>
+        <a href="{{ url_for('security') }}" class="menu-item">
+            <div class="menu-item-left">
+                <div class="menu-icon"><i data-feather="shield"></i></div>
+                <span class="menu-title">Security Settings</span>
+            </div>
+            <i data-feather="chevron-right" class="text-muted"></i>
+        </a>
+        <a href="{{ url_for('admin') }}" class="menu-item">
+            <div class="menu-item-left">
+                <div class="menu-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i data-feather="terminal"></i></div>
+                <span class="menu-title">Admin Control Panel</span>
+            </div>
+            <i data-feather="chevron-right" class="text-muted"></i>
+        </a>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-item" onclick="comingSoon('Support & FAQs')">
+            <div class="menu-item-left">
+                <div class="menu-icon"><i data-feather="help-circle"></i></div>
+                <span class="menu-title">Support & FAQs</span>
+            </div>
+            <i data-feather="chevron-right" class="text-muted"></i>
+        </div>
+        <a href="{{ url_for('settings') }}" class="menu-item">
+            <div class="menu-item-left">
+                <div class="menu-icon"><i data-feather="settings"></i></div>
+                <span class="menu-title">App Settings</span>
+            </div>
+            <i data-feather="chevron-right" class="text-muted"></i>
+        </a>
+        <a href="#" class="menu-item">
+            <div class="menu-item-left">
+                <div class="menu-icon"><i data-feather="moon"></i></div>
+                <span class="menu-title">Dark Mode</span>
+            </div>
+            <div class="menu-item-right">
+                <!-- Simple toggle mockup -->
+                <div style="width: 40px; height: 20px; background: var(--glass-border); border-radius: 20px; position: relative;">
+                    <div style="width: 16px; height: 16px; background: var(--text-muted); border-radius: 50%; position: absolute; top: 2px; left: 2px;"></div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="menu-group">
+        <a href="{{ url_for('splash') }}" class="menu-item logout-btn" onclick="logoutUser()">
+            <div class="menu-item-left">
+                <div class="menu-icon"><i data-feather="log-out"></i></div>
+                <span class="menu-title">Log Out</span>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        let user = getUser();
+        document.getElementById('profile-name-display').textContent = user.fullname;
+        document.getElementById('profile-email-display').textContent = user.email;
+        
+        const updateAvatar = (u) => {
+            const avatarDiv = document.getElementById('profile-avatar-display');
+            if (avatarDiv && avatarDiv.childNodes[0]) {
+                avatarDiv.childNodes[0].nodeValue = getInitials(u.fullname);
+            }
+        };
+        updateAvatar(user);
+
+        user = await refreshUser();
+        document.getElementById('profile-name-display').textContent = user.fullname;
+        document.getElementById('profile-email-display').textContent = user.email;
+        updateAvatar(user);
+    });
+</script>
+{% endblock %}
+
+{% block bottom_nav %}
+<div class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-item">
+        <i data-feather="home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('cards') }}" class="nav-item">
+        <i data-feather="credit-card"></i>
+        <span>Cards</span>
+    </a>
+    <a href="{{ url_for('transfer') }}" class="nav-item">
+        <i data-feather="send"></i>
+        <span>Transfer</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item">
+        <i data-feather="clock"></i>
+        <span>History</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="nav-item active">
+        <i data-feather="user"></i>
+        <span>Profile</span>
+    </a>
+</div>
+{% endblock %}

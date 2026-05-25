@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-lg);
+    }
+    .user-greeting {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+    }
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    .notification-btn {
+        position: relative;
+        background: var(--surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-full);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-main);
+        box-shadow: var(--shadow-sm);
+    }
+    .notification-badge {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        width: 8px;
+        height: 8px;
+        background: var(--danger);
+        border-radius: var(--radius-full);
+    }
+    
+    /* Balance Card */
+    .balance-card {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        color: white;
+        margin-bottom: var(--space-lg);
+        box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    .balance-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-full);
+    }
+    .balance-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        margin-bottom: 0.25rem;
+    }
+    .balance-amount {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: var(--space-sm);
+        letter-spacing: -0.02em;
+    }
+    .account-number {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        opacity: 0.9;
+        background: rgba(0, 0, 0, 0.15);
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-sm);
+        display: inline-flex;
+    }
+
+    /* Quick Actions */
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: var(--space-md);
+    }
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: var(--space-sm);
+        margin-bottom: var(--space-xl);
+    }
+    .action-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: var(--text-main);
+        cursor: pointer;
+    }
+    .action-icon {
+        width: 56px;
+        height: 56px;
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--secondary);
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.2s ease;
+        border: 1px solid var(--glass-border);
+    }
+    .action-item:hover .action-icon {
+        transform: translateY(-2px);
+    }
+    .action-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    /* Transactions */
+    .transaction-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+    .transaction-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+        padding: var(--space-sm) var(--space-md);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--glass-border);
+    }
+    .txn-left {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+    }
+    .txn-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(124, 58, 237, 0.1);
+        color: var(--primary);
+    }
+    .txn-icon.expense {
+        background: rgba(244, 63, 94, 0.1);
+        color: var(--danger);
+    }
+    .txn-icon.income {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+    .txn-details h4 {
+        font-size: 0.875rem;
+        margin-bottom: 0.125rem;
+    }
+    .txn-details p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .txn-amount {
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    .txn-amount.expense {
+        color: var(--text-main);
+    }
+    .txn-amount.income {
+        color: var(--success);
+    }
+    .empty-state {
+        text-align: center;
+        padding: var(--space-xl) var(--space-md);
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        border: 1px dashed var(--glass-border);
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container animate-fade-in-up">
+    <!-- Header -->
+    <header class="header">
+        <div class="user-greeting">
+            <div class="avatar-sm" id="user-avatar">JD</div>
+            <div>
+                <p class="text-xs text-muted">Good Morning,</p>
+                <h2 class="font-bold" id="user-name">Loading...</h2>
+            </div>
+        </div>
+        <a href="{{ url_for('notifications') }}" class="notification-btn">
+            <i data-feather="bell"></i>
+            <span class="notification-badge"></span>
+        </a>
+    </header>
+
+    <!-- Balance Card -->
+    <a href="{{ url_for('analytics') }}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="balance-card">
+            <p class="balance-label">Total Balance (Tap for Analytics) <i data-feather="trending-up" style="width: 12px; height: 12px; vertical-align: middle; margin-left: 2px;"></i></p>
+            <h1 class="balance-amount" id="display-balance">₦0.00</h1>
+            <div class="account-number" onclick="event.stopPropagation(); copyAccountToClipboard()">
+                <span id="display-account-number">3000000000</span>
+                <i data-feather="copy" style="width: 14px; height: 14px; cursor: pointer;"></i>
+            </div>
+        </div>
+    </a>
+
+    <!-- Quick Actions -->
+    <h3 class="section-title">Quick Actions</h3>
+    <div class="quick-actions">
+        <a href="{{ url_for('deposit') }}" class="action-btn" style="text-decoration: none; color: inherit;">
+            <div class="action-icon"><i data-feather="plus"></i></div>
+            <span>Deposit</span>
+        </a>
+        <a href="{{ url_for('cards') }}" class="action-btn" style="text-decoration: none; color: inherit;">
+            <div class="action-icon" style="background: rgba(124, 58, 237, 0.1); color: var(--primary);"><i data-feather="credit-card"></i></div>
+            <span>Cards</span>
+        </a>
+        <a href="{{ url_for('transfer') }}" class="action-btn" style="text-decoration: none; color: inherit;">
+            <div class="action-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i data-feather="send"></i></div>
+            <span>Transfer</span>
+        </a>
+        <a href="{{ url_for('bills') }}" class="action-btn" style="text-decoration: none; color: inherit;">
+            <div class="action-icon" style="background: rgba(244, 63, 94, 0.1); color: var(--danger);"><i data-feather="phone"></i></div>
+            <span>Airtime</span>
+        </a>
+        <a href="{{ url_for('bills') }}" class="action-btn" style="text-decoration: none; color: inherit;">
+            <div class="action-icon" style="background: rgba(6, 182, 212, 0.1); color: var(--secondary);"><i data-feather="wifi"></i></div>
+            <span>Data</span>
+        </a>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="flex justify-between align-center mb-md">
+        <h3 class="section-title" style="margin-bottom: 0;">Recent Transactions</h3>
+        <a href="{{ url_for('history') }}" class="text-xs font-medium" style="color: var(--secondary); text-decoration: none;">See All</a>
+    </div>
+    
+    <div class="transaction-list" id="recent-transactions">
+        <!-- Javascript will populate this -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Initialize user
+        const user = await refreshUser(); // Make sure we get fresh data
+        document.getElementById('user-name').textContent = user.fullname.split(' ')[0] || user.fullname;
+        document.getElementById('user-avatar').textContent = getInitials(user.fullname);
+
+        document.getElementById('display-balance').textContent = formatCurrency(user.balance);
+        document.getElementById('display-account-number').textContent = user.account_number || '3000000000';
+
+        await renderTransactions();
+    });
+
+    function copyAccountToClipboard() {
+        const user = getUser();
+        navigator.clipboard.writeText(user.account_number || '3000000000');
+        showToast('Account number copied to clipboard!', 'success');
+    }
+
+    async function renderTransactions() {
+        const txns = (await getTransactions()).slice(0, 3); // Get top 3
+        const list = document.getElementById('recent-transactions');
+        
+        if (txns.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <i data-feather="inbox" style="width: 40px; height: 40px; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <p>No recent transactions.</p>
+                    <p class="text-xs mt-sm">Make a transfer to see it here.</p>
+                </div>
+            `;
+            feather.replace();
+            return;
+        }
+
+        let html = '';
+        txns.forEach(txn => {
+            const isExpense = txn.type === 'expense';
+            const icon = isExpense ? 'arrow-up-right' : 'arrow-down-left';
+            html += `
+                <a href="/transaction_details?txn_id=${txn.id}" class="transaction-item" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <div class="txn-left">
+                        <div class="txn-icon ${isExpense ? 'expense' : 'income'}"><i data-feather="${icon}"></i></div>
+                        <div class="txn-details">
+                            <h4>${txn.title}</h4>
+                            <p>${formatRelDate(txn.date)}</p>
+                        </div>
+                    </div>
+                    <div class="txn-amount ${isExpense ? 'expense' : 'income'}">
+                        ${isExpense ? '-' : '+'}${formatCurrency(txn.amount)}
+                    </div>
+                </a>
+            `;
+        });
+        list.innerHTML = html;
+        feather.replace();
+    }
+</script>
+{% endblock %}
+
+{% block bottom_nav %}
+<div class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-item active">
+        <i data-feather="home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('cards') }}" class="nav-item">
+        <i data-feather="credit-card"></i>
+        <span>Cards</span>
+    </a>
+    <a href="{{ url_for('transfer') }}" class="nav-item">
+        <i data-feather="send"></i>
+        <span>Transfer</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item">
+        <i data-feather="clock"></i>
+        <span>History</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="nav-item">
+        <i data-feather="user"></i>
+        <span>Profile</span>
+    </a>
+</div>
+{% endblock %}

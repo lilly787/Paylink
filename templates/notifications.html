@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notif-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .back-btn {
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .notif-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+    .notif-item {
+        display: flex;
+        gap: var(--space-md);
+        padding: var(--space-md);
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--shadow-sm);
+        position: relative;
+    }
+    .notif-item.unread::before {
+        content: '';
+        position: absolute;
+        top: 16px;
+        left: 8px;
+        width: 8px;
+        height: 8px;
+        background: var(--danger);
+        border-radius: 50%;
+    }
+    .notif-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .notif-icon.success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+    .notif-icon.warning {
+        background: rgba(244, 63, 94, 0.1);
+        color: var(--danger);
+    }
+    .notif-icon.info {
+        background: rgba(6, 182, 212, 0.1);
+        color: var(--secondary);
+    }
+    .notif-content h4 {
+        font-size: 0.9375rem;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+    .notif-content p {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+    .notif-time {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notif-container animate-fade-in-up">
+    <header class="header">
+        <a href="{{ url_for('dashboard') }}" class="back-btn">
+            <i data-feather="arrow-left"></i>
+        </a>
+        <h1>Notifications</h1>
+    </header>
+
+    <div class="notif-list" id="notif-list-container">
+        <!-- Javascript will render dynamic alerts -->
+        <div class="empty-state" style="text-align: center; padding: var(--space-xl); color: var(--text-muted);">
+            <i data-feather="bell-off" style="width: 40px; height: 40px; margin-bottom: 8px; opacity: 0.5;"></i>
+            <p class="text-xs">You're all caught up!</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadNotifications();
+        // Clear unread notices
+        await markNotificationsAsRead();
+    });
+
+    async function loadNotifications() {
+        const notifs = await fetchNotifications();
+        const container = document.getElementById('notif-list-container');
+        
+        if (notifs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: var(--space-xl) var(--space-md); background: var(--surface); border-radius: var(--radius-md); border: 1px dashed var(--glass-border); color: var(--text-muted);">
+                    <i data-feather="bell-off" style="width: 48px; height: 48px; margin-bottom: var(--space-sm); opacity: 0.5; display: block; margin-left: auto; margin-right: auto;"></i>
+                    <p class="font-bold text-sm mb-xs">All Caught Up!</p>
+                    <p class="text-xs">No notifications found. Outlays, receipts, and system alerts will appear here.</p>
+                </div>
+            `;
+            feather.replace();
+            return;
+        }
+
+        let html = '';
+        notifs.forEach(n => {
+            const isUnread = n.is_read === 0;
+            const type = n.type || 'info'; // success, warning, info
+            
+            let icon = 'info';
+            if (type === 'success') icon = 'check-circle';
+            else if (type === 'warning') icon = 'alert-triangle';
+
+            html += `
+                <div class="notif-item ${isUnread ? 'unread' : ''}">
+                    <div class="notif-icon ${type}"><i data-feather="${icon}"></i></div>
+                    <div class="notif-content">
+                        <h4>${n.title}</h4>
+                        <p>${n.message}</p>
+                        <div class="notif-time">${formatRelDate(n.date)}</div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        feather.replace();
+    }
+</script>
+{% endblock %}

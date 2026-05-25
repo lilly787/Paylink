@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .details-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-xl);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .back-btn {
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .receipt-card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl) var(--space-md);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--glass-border);
+        text-align: center;
+        margin-bottom: var(--space-lg);
+        position: relative;
+    }
+    
+    .receipt-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-full);
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-md);
+    }
+    .receipt-icon.expense {
+        background: rgba(244, 63, 94, 0.1);
+        color: var(--danger);
+    }
+
+    .amount-display {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: var(--space-xs);
+    }
+    .amount-display.expense { color: var(--text-main); }
+    .amount-display.income { color: var(--success); }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: var(--space-lg);
+    }
+
+    .details-list {
+        text-align: left;
+        border-top: 1px dashed var(--glass-border);
+        padding-top: var(--space-md);
+    }
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--space-sm);
+        font-size: 0.875rem;
+    }
+    .detail-label {
+        color: var(--text-muted);
+    }
+    .detail-value {
+        font-weight: 500;
+        color: var(--text-main);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: var(--space-sm);
+        margin-top: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="details-container animate-fade-in-up">
+    <header class="header">
+        <a href="{{ url_for('history') }}" class="back-btn">
+            <i data-feather="arrow-left"></i>
+        </a>
+        <h1>Receipt</h1>
+    </header>
+
+    <div class="receipt-card">
+        <div class="receipt-icon" id="receipt-icon"><i data-feather="check"></i></div>
+        <h2 class="amount-display" id="receipt-amount">₦0.00</h2>
+        <div class="status-badge"><i data-feather="check-circle" style="width: 12px; height: 12px;"></i> Successful</div>
+        
+        <div class="details-list">
+            <div class="detail-row">
+                <span class="detail-label">To / From</span>
+                <span class="detail-value" id="receipt-title">Loading...</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date</span>
+                <span class="detail-value" id="receipt-date">Loading...</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Transaction ID</span>
+                <span class="detail-value" id="receipt-id">TXN-...</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Description</span>
+                <span class="detail-value" id="receipt-desc">...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-outline" onclick="showToast('Receipt saved to Gallery!', 'success')" style="flex: 1;">
+            <i data-feather="download" style="margin-right: 8px;"></i> Download
+        </button>
+        <button class="btn btn-outline" onclick="showToast('Share dialog opened', 'info')" style="flex: 1;">
+            <i data-feather="share-2" style="margin-right: 8px;"></i> Share
+        </button>
+    </div>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary mt-md" style="width: 100%; text-decoration: none; text-align: center; display: block;">Done</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function renderReceipt(txn) {
+        const isExpense = txn.type === 'expense';
+        
+        document.getElementById('receipt-amount').textContent = (isExpense ? '-' : '+') + formatCurrency(txn.amount);
+        document.getElementById('receipt-amount').className = 'amount-display ' + (isExpense ? 'expense' : 'income');
+        
+        document.getElementById('receipt-icon').className = 'receipt-icon ' + (isExpense ? 'expense' : 'income');
+        document.getElementById('receipt-icon').innerHTML = `<i data-feather="${isExpense ? 'arrow-up-right' : 'arrow-down-left'}"></i>`;
+        
+        document.getElementById('receipt-title').textContent = txn.title;
+        document.getElementById('receipt-date').textContent = new Date(txn.date).toLocaleString();
+        document.getElementById('receipt-id').textContent = txn.reference || ('TXN-' + String(txn.id));
+        document.getElementById('receipt-desc').textContent = txn.description || 'N/A';
+        
+        // Parse and render premium dynamic extra rows (tokens, operators, etc.)
+        const detailsList = document.querySelector('.details-list');
+        if (txn.receipt_json) {
+            try {
+                const extra = JSON.parse(txn.receipt_json);
+                if (extra.phone) {
+                    insertReceiptRow(detailsList, 'Recipient Phone', extra.phone);
+                }
+                if (extra.meter_number) {
+                    insertReceiptRow(detailsList, 'Meter/SmartCard No', extra.meter_number);
+                }
+                if (extra.provider) {
+                    insertReceiptRow(detailsList, 'Operator/Provider', extra.provider);
+                }
+                if (extra.token) {
+                    insertReceiptRow(detailsList, 'Electricity Token', `<span style="font-family:'Courier New', monospace; font-weight:700; color:var(--success); font-size:0.95rem; letter-spacing:1px; background:rgba(16,185,129,0.1); padding:4px 8px; border-radius:4px; display:inline-block; margin-top:4px;">${extra.token}</span>`);
+                }
+            } catch(e) {}
+        }
+        
+        feather.replace();
+    }
+
+    function insertReceiptRow(container, label, value) {
+        const row = document.createElement('div');
+        row.className = 'detail-row';
+        row.innerHTML = `
+            <span class="detail-label">${label}</span>
+            <span class="detail-value">${value}</span>
+        `;
+        container.appendChild(row);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const txns = await getTransactions();
+        
+        // Check if a specific transaction ID was requested via URL
+        const params = new URLSearchParams(window.location.search);
+        const txnId = params.get('txn_id');
+        
+        let txn = null;
+        if (txnId) {
+            txn = txns.find(t => String(t.id) === txnId);
+        }
+        // Fall back to most recent transaction
+        if (!txn && txns.length > 0) {
+            txn = txns[0];
+        }
+
+        if (txn) {
+            renderReceipt(txn);
+        } else {
+            document.getElementById('receipt-title').textContent = 'No transactions found';
+        }
+    });
+</script>
+{% endblock %}

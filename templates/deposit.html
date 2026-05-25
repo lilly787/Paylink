@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}Deposit Money{% endblock %}
+
+{% block extra_css %}
+<style>
+    .deposit-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-xl);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .back-btn {
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Mock Card */
+    .mock-card {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        color: white;
+        box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+        margin-bottom: var(--space-xl);
+        position: relative;
+        overflow: hidden;
+    }
+    .mock-card::after {
+        content: '';
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 150px;
+        height: 150px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+    .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-xl);
+    }
+    .chip {
+        width: 40px;
+        height: 30px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 4px;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    .card-number {
+        font-size: 1.25rem;
+        letter-spacing: 2px;
+        margin-bottom: var(--space-md);
+        font-family: monospace;
+    }
+    .card-bottom {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        opacity: 0.9;
+    }
+
+    .amount-input-group {
+        text-align: center;
+        margin-bottom: var(--space-xl);
+    }
+    .currency-symbol {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        vertical-align: middle;
+    }
+    .amount-input {
+        font-size: 3rem;
+        font-weight: 700;
+        width: 150px;
+        text-align: center;
+        border: none;
+        background: transparent;
+        color: var(--text-main);
+        outline: none;
+    }
+    .amount-input::placeholder {
+        color: var(--text-muted);
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="deposit-container animate-fade-in-up">
+    <header class="header">
+        <a href="{{ url_for('dashboard') }}" class="back-btn">
+            <i data-feather="arrow-left"></i>
+        </a>
+        <h1>Deposit via Card</h1>
+    </header>
+
+    <div class="mock-card">
+        <div class="card-top">
+            <div class="chip"></div>
+            <div class="font-bold">BANK</div>
+        </div>
+        <div class="card-number">**** **** **** 4242</div>
+        <div class="card-bottom">
+            <span id="card-name">JOHN DOE</span>
+            <span>12/28</span>
+        </div>
+    </div>
+
+    <form onsubmit="handleDeposit(event)">
+        <div class="amount-input-group">
+            <div>
+                <span class="currency-symbol">₦</span>
+                <input type="number" id="amount" class="amount-input" placeholder="0.00" step="0.01" min="100" required>
+            </div>
+            <p class="text-sm text-muted mt-sm">Minimum deposit: ₦100.00</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="deposit-btn">Fund Account</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = getUser();
+        if (user.fullname) {
+            document.getElementById('card-name').textContent = user.fullname.toUpperCase();
+        }
+    });
+
+    async function handleDeposit(event) {
+        event.preventDefault();
+        const amount = parseFloat(document.getElementById('amount').value);
+        const btn = document.getElementById('deposit-btn');
+        const user = getUser();
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i data-feather="loader" class="spin"></i> Processing...';
+        feather.replace();
+
+        try {
+            const response = await fetch('/api/deposit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: user.id, amount: amount })
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                user.balance = result.balance;
+                localStorage.setItem('paylink_user', JSON.stringify(user));
+                showToast(`Successfully deposited ₦${amount}`, 'success');
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('transaction_details') }}";
+                }, 1500);
+            } else {
+                showToast('Deposit failed', 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Fund Account';
+            }
+        } catch (e) {
+            showToast('Server error', 'error');
+            btn.disabled = false;
+            btn.innerHTML = 'Fund Account';
+        }
+    }
+</script>
+{% endblock %}
