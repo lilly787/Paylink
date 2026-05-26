@@ -63,16 +63,15 @@
     .credit-card {
         width: 100%;
         height: 220px;
-        /* Premium deep violet brand gradient with subtle neon accent */
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%), 
-                    radial-gradient(circle at top right, var(--brand), var(--bg));
+        /* Sapphire glassmorphic electric cobalt design */
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.45) 0%, rgba(20, 34, 60, 0.95) 100%);
         border-radius: var(--radius-md);
         padding: var(--space-md) var(--space-lg);
         color: white;
         position: relative;
         overflow: hidden;
-        border: 0.5px solid rgba(167, 139, 250, 0.4);
-        box-shadow: 0 15px 35px rgba(124, 58, 237, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+        border: 0.5px solid rgba(59, 130, 246, 0.5);
+        box-shadow: 0 15px 35px rgba(37, 99, 235, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
         transition: transform 0.6s, box-shadow 0.3s;
         transform-style: preserve-3d;
         display: flex;
@@ -80,19 +79,25 @@
         justify-content: space-between;
     }
     .credit-card.physical {
-        /* Matte Obsidian Black + Gold metallic gradients */
-        background: linear-gradient(135deg, #1C1033 0%, #0F0822 100%), 
-                    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-        border: 0.5px solid rgba(245, 200, 66, 0.4); /* Gold card accent border */
-        box-shadow: 0 15px 35px rgba(212, 160, 23, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        /* Brushed Platinum/Silver metal design with deep navy accent text */
+        background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 50%, #94a3b8 100%);
+        border: 0.5px solid rgba(255, 255, 255, 0.7);
+        box-shadow: 0 15px 35px rgba(148, 163, 184, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+        color: #0B1528 !important;
     }
     .credit-card.physical .card-value, 
     .credit-card.physical .card-number span {
-        color: var(--gold-soft) !important;
-        text-shadow: 0 0 8px rgba(245, 200, 66, 0.25);
+        color: #0B1528 !important;
+        text-shadow: none !important;
     }
     .credit-card.physical .card-type span {
-        color: var(--gold-accent);
+        color: #2563EB;
+    }
+    .credit-card.physical .card-label {
+        color: #475569 !important;
+    }
+    .credit-card.physical .card-chip {
+        background: linear-gradient(135deg, #2563EB, #1D4ED8) !important;
     }
     .credit-card.frozen {
         filter: grayscale(0.8) contrast(0.9);
@@ -144,7 +149,7 @@
     .card-chip {
         width: 42px;
         height: 32px;
-        background: linear-gradient(135deg, #F5C842, #D4A017);
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%);
         border-radius: 6px;
         position: relative;
         box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.15);
@@ -313,11 +318,11 @@
         </div>
 
         <!-- Request Physical Card Promotion (Only on physical tab) -->
-        <div class="glass-card mb-lg" id="physical-promo-card" style="display: none; background: linear-gradient(135deg, rgba(225, 185, 106, 0.05) 0%, rgba(29, 158, 117, 0.02) 100%);">
-            <span class="sim-tag" style="background: rgba(225, 185, 106, 0.1); color: var(--gold-cta);"><i data-feather="award" style="width: 12px; height: 12px; vertical-align: middle;"></i> Premium Gold Card</span>
-            <h3 class="font-headings" style="font-size: 0.9rem; font-weight: 500; margin-bottom: 4px;">Request Physical NovaPay Card</h3>
-            <p class="text-xs text-muted mb-md">Get a premium gold plated Mastercard delivered to your doorstep free. Insured worldwide.</p>
-            <button class="btn btn-gold" onclick="showToast('Physical card requested successfully!', 'success')">Request Card Now</button>
+        <div class="glass-card mb-lg" id="physical-promo-card" style="display: none; background: linear-gradient(135deg, rgba(96, 165, 250, 0.08) 0%, rgba(37, 99, 235, 0.02) 100%);">
+            <span class="sim-tag" style="background: rgba(59, 130, 246, 0.15); color: var(--gold-cta);"><i data-feather="award" style="width: 12px; height: 12px; vertical-align: middle;"></i> Platinum Metal Card</span>
+            <h3 class="font-headings" style="font-size: 0.9rem; font-weight: 500; margin-bottom: 4px;">Request Physical Brushed Platinum Card</h3>
+            <p class="text-xs text-muted mb-md">Get a premium brushed Platinum Mastercard delivered to your doorstep free. Insured worldwide.</p>
+            <button class="btn btn-primary" onclick="showToast('Physical platinum card requested successfully!', 'success')">Request Card Now</button>
         </div>
 
         <!-- Card Simulator -->

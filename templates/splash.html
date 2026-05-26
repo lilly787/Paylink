@@ -14,9 +14,9 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 45%, #d97706 100%);
+        background: radial-gradient(circle at center, #14223C 0%, #0B1528 100%);
         z-index: 99999;
-        color: #0f172a; /* Deep Slate text */
+        color: #F8FAFC; /* Ice White text */
         text-align: center;
         font-family: 'Inter', sans-serif;
     }
@@ -26,38 +26,39 @@
         justify-content: center;
         width: 90px;
         height: 90px;
-        background: rgba(255, 255, 255, 0.45);
-        border: 2px solid rgba(217, 119, 6, 0.3); /* Subtle gold border */
+        background: rgba(20, 34, 60, 0.6);
+        border: 1.5px solid rgba(59, 130, 246, 0.45); /* Glowing blue border */
         border-radius: 24px;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 15px 35px rgba(37, 99, 235, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.1);
     }
     .app-name {
         font-size: 3rem;
         font-weight: 800;
         letter-spacing: -0.04em;
         margin-bottom: 0.5rem;
-        color: #0f172a;
-        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+        color: #F8FAFC;
+        text-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
     }
     .app-subtitle {
-        font-size: 1rem;
+        font-size: 0.85rem;
         font-weight: 600;
-        color: #1e3a8a; /* Midnight Blue */
-        opacity: 0.9;
-        letter-spacing: 0.05em;
+        color: #60A5FA; /* Electric Ice Blue */
+        opacity: 0.95;
+        letter-spacing: 0.15em;
         text-transform: uppercase;
         margin-bottom: 3rem;
     }
     .loading-spinner {
-        width: 24px;
-        height: 24px;
-        border: 3px solid rgba(15, 23, 42, 0.15);
-        border-top-color: #d97706; /* Deep Gold */
+        width: 28px;
+        height: 28px;
+        border: 3px solid rgba(255, 255, 255, 0.08);
+        border-top-color: #3B82F6; /* Neon Sapphire Blue */
         border-radius: 50%;
         animation: spin 1s linear infinite;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
     }
     @keyframes spin {
         to { transform: rotate(360deg); }
@@ -68,10 +69,10 @@
 {% block content %}
 <div class="splash-container">
     <div class="logo-container animate-pulse-slow">
-        <i data-feather="link-2" style="width: 44px; height: 44px; color: #1e3a8a;"></i>
+        <i data-feather="link-2" style="width: 44px; height: 44px; color: #3B82F6;"></i>
     </div>
     <h1 class="app-name animate-fade-in-up">Paylink</h1>
-    <p class="app-subtitle animate-fade-in-up" style="animation-delay: 0.15s;">Premium Banking Ecosystem</p>
+    <p class="app-subtitle animate-fade-in-up" style="animation-delay: 0.15s;">Swiss Fintech Ecosystem</p>
     <div class="loading-spinner animate-fade-in-up" style="animation-delay: 0.3s;"></div>
 </div>
 {% endblock %}

@@ -10,15 +10,15 @@
     <script src="https://unpkg.com/feather-icons"></script>
     <style>
         :root {
-            --primary-bg: #0D1F2D;       /* Midnight Navy background */
-            --brand-primary: #1D9E75;    /* Teal Green primary */
-            --brand-accent: #5DCAA5;     /* Light Teal */
-            --gold-cta: #E1B96A;         /* Warm Gold */
-            --surface-card: #132736;     /* Lighter Navy */
-            --text-white: #F5F7F6;
-            --text-muted: #8AABB8;
-            --off-white-bg: #F5F7F6;     /* Light section background */
-            --border-divider: rgba(255,255,255,0.08);
+            --primary-bg: #0B1528;       /* Deep Royal Navy background */
+            --brand-primary: #2563EB;    /* Electric Blue primary actions */
+            --brand-accent: #3B82F6;     /* Neon Cobalt accent */
+            --gold-cta: #60A5FA;         /* Soft Ice Blue brand CTA accent */
+            --surface-card: #14223C;     /* Deep Cobalt card surfaces */
+            --text-white: #F8FAFC;       /* Ice White text */
+            --text-muted: #94A3B8;       /* Slate Grey muted text */
+            --off-white-bg: #F1F5F9;     /* Platinum section background */
+            --border-divider: rgba(59, 130, 246, 0.15);
         }
 
         * {
@@ -98,7 +98,7 @@
             justify-content: space-between;
             gap: 4rem;
             position: relative;
-            background: radial-gradient(circle at top right, rgba(93, 202, 165, 0.08), transparent 45%);
+            background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 45%);
         }
         .hero-content {
             max-width: 600px;
@@ -107,9 +107,9 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(225, 185, 106, 0.1);
+            background: rgba(96, 165, 250, 0.12);
             color: var(--gold-cta);
-            border: 1px solid rgba(225, 185, 106, 0.2);
+            border: 1px solid rgba(96, 165, 250, 0.25);
             padding: 0.5rem 1rem;
             border-radius: 30px;
             font-size: 0.75rem;
@@ -151,13 +151,13 @@
             gap: 8px;
         }
         .btn-gold {
-            background: var(--gold-cta);
-            color: var(--primary-bg);
-            box-shadow: 0 10px 20px rgba(225, 185, 106, 0.15);
+            background: var(--brand-primary);
+            color: var(--text-white);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
         }
         .btn-gold:hover {
             transform: translateY(-2px);
-            background: #d4af37;
+            background: #1d4ed8;
         }
         .btn-ghost {
             background: transparent;
@@ -197,8 +197,9 @@
         .mock-chip {
             width: 45px;
             height: 35px;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%);
             border-radius: 6px;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.15);
         }
         .mock-balance-title {
             font-size: 0.75rem;
@@ -253,7 +254,7 @@
             width: 56px;
             height: 56px;
             border-radius: 14px;
-            background: rgba(29, 158, 117, 0.1);
+            background: rgba(37, 99, 235, 0.1);
             color: var(--brand-primary);
             display: flex;
             align-items: center;
@@ -279,7 +280,7 @@
             display: flex;
             align-items: center;
             gap: 6rem;
-            background: radial-gradient(circle at bottom left, rgba(225, 185, 106, 0.05), transparent 45%);
+            background: radial-gradient(circle at bottom left, rgba(96, 165, 250, 0.08), transparent 45%);
         }
         .trust-content {
             flex: 1;
@@ -628,10 +629,10 @@
     <!-- Trust & Security -->
     <section class="trust" id="security">
         <div class="hero-mockup">
-            <div class="balance-card-mockup" style="background: linear-gradient(135deg, rgba(29, 158, 117, 0.1) 0%, rgba(93, 202, 165, 0.02) 100%), #132736; border-color: var(--border-divider);">
+            <div class="balance-card-mockup" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.02) 100%), #14223C; border-color: var(--border-divider);">
                 <div class="flex justify-between align-center">
                     <i data-feather="key" style="color: var(--brand-accent); width: 28px; height: 28px;"></i>
-                    <span style="font-size: 0.65rem; background: rgba(93, 202, 165, 0.1); color: var(--brand-accent); padding: 4px 10px; border-radius: 12px; font-weight: 700;">256-BIT ENCRYPTED</span>
+                    <span style="font-size: 0.65rem; background: rgba(59, 130, 246, 0.15); color: var(--brand-accent); padding: 4px 10px; border-radius: 12px; font-weight: 700;">256-BIT ENCRYPTED</span>
                 </div>
                 <div>
                     <h4 class="font-headings" style="margin-bottom: 6px; font-size: 1.15rem;">Advanced Fraud Shield</h4>

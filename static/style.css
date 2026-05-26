@@ -1,25 +1,25 @@
 :root {
-  /* Violet + Gold theme tokens */
-  --bg: #1C1033;              /* deep violet-black (page base) */
-  --surface: #2D1B69;         /* dark violet for cards/surfaces */
-  --brand: #7C3AED;           /* rich violet (primary actions) */
-  --accent: #A78BFA;          /* soft violet (icons, muted text) */
-  --highlight-light: #EDE9FE; /* pale violet tint for highlights */
-  --gold-primary: #D4A017;    /* warm deep gold for hero CTA */
-  --gold-accent: #F5C842;     /* bright yellow-gold for credits/badges */
-  --gold-soft: #FEF3C7;       /* cream gold for soft backgrounds */
-  --text: #FAF7FF;            /* near white with violet tint */
-  --muted: #A78BFA;           /* muted violet text */
-  --error: #F87171;           /* debit / error red */
-  --divider: rgba(124,58,237,0.25);
-  --card-border: 0.5px solid rgba(124,58,237,0.3);
-  --overlay: rgba(28,16,51,0.85);
+  /* Swiss Sapphire & Platinum theme tokens */
+  --bg: #0B1528;              /* Deep Royal Navy background */
+  --surface: #14223C;         /* Deep Cobalt card surface */
+  --brand: #2563EB;           /* Electric Blue primary actions */
+  --accent: #3B82F6;          /* Neon Cobalt accent */
+  --highlight-light: #EFF6FF; /* Ice White/Blue pale highlight tint */
+  --gold-primary: #3B82F6;    /* Mapped to brand accent for consistent look */
+  --gold-accent: #60A5FA;     /* Soft Ice Blue for credits/badges */
+  --gold-soft: #F1F5F9;       /* Platinum/Silver cream soft background */
+  --text: #F8FAFC;            /* Ice White text */
+  --muted: #94A3B8;           /* Slate Grey muted text */
+  --error: #EF4444;           /* Debit / error red */
+  --divider: rgba(59, 130, 246, 0.2);
+  --card-border: 0.5px solid rgba(59, 130, 246, 0.25);
+  --overlay: rgba(11, 21, 40, 0.85);
 
   /* Legacy aliases used across CSS */
   --brand-primary: var(--brand);
   --brand-accent: var(--accent);
   --gold-cta: var(--gold-primary);
-  --primary-hover: #6b2fe1;
+  --primary-hover: #1D4ED8;   /* Darker Electric Blue for active states */
   --bg-color: var(--bg);
   --surface-card: var(--surface);
   --text-main: var(--text);
@@ -42,19 +42,19 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.16);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.18);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
 }
 
 [data-theme="light"] {
-  /* Light-mode landing sections: pale violet tint, avoid pure white */
-  --bg-color: #FAF7FF; /* light near-white with violet tint */
-  --surface: #FEF3C7;  /* cream gold soft surfaces in light sections */
-  --text-main: #1C1033; /* deep violet text on light backgrounds */
-  --text-muted: #6B7280;
+  /* Light-mode landing sections: pale platinum/ice blue tint */
+  --bg-color: #F8FAFC; /* Light Ice White */
+  --surface: #F1F5F9;  /* Brushed Platinum soft surfaces */
+  --text-main: #0B1528; /* Deep Royal Navy text */
+  --text-muted: #64748B;
   --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: rgba(28,16,51,0.06);
+  --glass-border: rgba(11, 21, 40, 0.06);
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
@@ -161,7 +161,7 @@ body {
 .btn-primary {
   background: var(--brand-primary);
   color: var(--text);
-  box-shadow: 0 4px 14px 0 rgba(124,58,237,0.18);
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.2);
 }
 
 .btn-primary:hover {
@@ -175,18 +175,18 @@ body {
   border: 1px solid var(--brand-accent);
 }
 .btn-outline:hover {
-  background: rgba(167,139,250,0.06);
+  background: rgba(59, 130, 246, 0.08);
 }
 
-/* Warm Gold button for landing page primary trigger */
+/* Warm Platinum/Accent button for secondary visual prompts */
 .btn-gold {
   background: var(--gold-cta);
-  color: var(--bg);
-  box-shadow: 0 4px 14px 0 rgba(212,160,23,0.25);
+  color: var(--text);
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.25);
 }
 .btn-gold:hover {
   opacity: 0.95;
-  background: #c48e0f;
+  background: var(--primary-hover);
 }
 
 /* Inputs */
@@ -208,7 +208,7 @@ body {
   padding: 0.875rem 1rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-divider);
-  background-color: rgba(45,27,105,0.45);
+  background-color: rgba(20, 34, 60, 0.45);
   color: var(--text-main);
   font-size: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -217,7 +217,7 @@ body {
 .input-field:focus {
   outline: none;
   border-color: var(--brand-accent);
-  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* Bottom Navigation */
@@ -233,7 +233,7 @@ body {
   justify-content: space-around;
   padding: 0.75rem 0;
   z-index: 999;
-  box-shadow: 0 -10px 40px rgba(28,16,51,0.18);
+  box-shadow: 0 -10px 40px rgba(11, 21, 40, 0.25);
 }
 
 .nav-item {
@@ -273,9 +273,9 @@ body {
   width: 34px;
   height: 4px;
   transform: translateX(-50%);
-  background: linear-gradient(90deg, rgba(245,200,66,0.25), rgba(212,160,23,0.95));
+  background: linear-gradient(90deg, rgba(96, 165, 250, 0.25), rgba(37, 99, 235, 0.95));
   border-radius: 999px;
-  box-shadow: 0 0 18px rgba(245,200,66,0.35);
+  box-shadow: 0 0 18px rgba(96, 165, 250, 0.35);
 }
 
 .nav-item svg {
