@@ -55,7 +55,7 @@
         color: white;
     }
 
-    /* 3D Glass Card */
+    /* 3D Glass Card Premium Styles */
     .card-wrapper {
         perspective: 1000px;
         margin-bottom: var(--space-lg);
@@ -63,24 +63,36 @@
     .credit-card {
         width: 100%;
         height: 220px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), 
-                    radial-gradient(circle at top right, var(--brand-accent), var(--primary-bg));
+        /* Premium deep violet brand gradient with subtle neon accent */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%), 
+                    radial-gradient(circle at top right, var(--brand), var(--bg));
         border-radius: var(--radius-md);
         padding: var(--space-md) var(--space-lg);
         color: white;
         position: relative;
         overflow: hidden;
-        border: 0.5px solid var(--border-divider);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-        transition: transform 0.6s;
+        border: 0.5px solid rgba(167, 139, 250, 0.4);
+        box-shadow: 0 15px 35px rgba(124, 58, 237, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+        transition: transform 0.6s, box-shadow 0.3s;
         transform-style: preserve-3d;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
     }
     .credit-card.physical {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%), #132736;
-        border-color: rgba(225, 185, 106, 0.3); /* Gold card accent border */
+        /* Matte Obsidian Black + Gold metallic gradients */
+        background: linear-gradient(135deg, #1C1033 0%, #0F0822 100%), 
+                    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+        border: 0.5px solid rgba(245, 200, 66, 0.4); /* Gold card accent border */
+        box-shadow: 0 15px 35px rgba(212, 160, 23, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
+    .credit-card.physical .card-value, 
+    .credit-card.physical .card-number span {
+        color: var(--gold-soft) !important;
+        text-shadow: 0 0 8px rgba(245, 200, 66, 0.25);
+    }
+    .credit-card.physical .card-type span {
+        color: var(--gold-accent);
     }
     .credit-card.frozen {
         filter: grayscale(0.8) contrast(0.9);
@@ -89,8 +101,8 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: rgba(13, 31, 45, 0.7);
-        backdrop-filter: blur(4px);
+        background: rgba(28, 16, 51, 0.75);
+        backdrop-filter: blur(6px);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -103,12 +115,13 @@
         align-items: center;
         justify-content: center;
         z-index: 10;
-        color: var(--error-debit);
+        color: var(--error);
         font-weight: 700;
         font-size: 1.5rem;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.15em;
         text-transform: uppercase;
         font-family: 'DM Sans', sans-serif;
+        text-shadow: 0 2px 10px rgba(248, 113, 113, 0.35);
     }
     .credit-card.frozen .freeze-watermark {
         display: flex;
@@ -131,10 +144,10 @@
     .card-chip {
         width: 42px;
         height: 32px;
-        background: linear-gradient(135deg, #f59e0b, #d97706);
+        background: linear-gradient(135deg, #F5C842, #D4A017);
         border-radius: 6px;
         position: relative;
-        box-shadow: inset 0 1px 1px rgba(255,255,255,0.4);
+        box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.15);
     }
     .card-middle {
         margin: var(--space-sm) 0;
@@ -316,7 +329,7 @@
             <form id="simulator-form" onsubmit="handleCardSimulation(event)">
                 <div class="input-group">
                     <label class="input-label" for="merchant">Online Vendor</label>
-                    <select id="merchant" class="input-field" style="background-color: var(--primary-bg); color: var(--text-white);" required>
+                    <select id="merchant" class="input-field" style="background-color: var(--bg); color: var(--text-white);" required>
                         <option value="Netflix Premium">Netflix Premium (₦4,400.00)</option>
                         <option value="Spotify Family">Spotify Premium (₦1,200.00)</option>
                         <option value="Amazon Web Services">Amazon Web Services (₦15,000.00)</option>

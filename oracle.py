@@ -10,7 +10,7 @@ _cache = {
     "expires_at": datetime.min
 }
 
-DEFAULT_ORACLE_ENDPOINT = "https://api.exchangerate.host/latest?base=USD&symbols=NGN"
+DEFAULT_ORACLE_ENDPOINT = "https://open.er-api.com/v6/latest/USD"
 
 
 def _fetch_json(url):

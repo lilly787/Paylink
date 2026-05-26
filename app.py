@@ -89,6 +89,10 @@ def analytics():
 def admin():
     return render_template('admin.html')
 
+@app.route('/save')
+def save():
+    return render_template('save.html')
+
 # ---- API ROUTES ----
 
 # -- Auth API --
