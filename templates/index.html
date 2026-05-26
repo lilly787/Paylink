@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaPay | Banking Built for Modern Nigeria</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&family=Inter:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        :root {
+            --primary-bg: #0D1F2D;       /* Midnight Navy background */
+            --brand-primary: #1D9E75;    /* Teal Green primary */
+            --brand-accent: #5DCAA5;     /* Light Teal */
+            --gold-cta: #E1B96A;         /* Warm Gold */
+            --surface-card: #132736;     /* Lighter Navy */
+            --text-white: #F5F7F6;
+            --text-muted: #8AABB8;
+            --off-white-bg: #F5F7F6;     /* Light section background */
+            --border-divider: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-white);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            width: 100%;
+            padding: 1.5rem 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-white);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        .logo span {
+            color: var(--brand-accent);
+        }
+        nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+        nav a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: var(--brand-accent);
+        }
+        .nav-btn {
+            background: rgba(29, 158, 117, 0.15);
+            border: 1px solid var(--brand-primary);
+            color: var(--brand-accent);
+            padding: 0.6rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .nav-btn:hover {
+            background: var(--brand-primary);
+            color: var(--text-white);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 10rem 8% 6rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4rem;
+            position: relative;
+            background: radial-gradient(circle at top right, rgba(93, 202, 165, 0.08), transparent 45%);
+        }
+        .hero-content {
+            max-width: 600px;
+        }
+        .license-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(225, 185, 106, 0.1);
+            color: var(--gold-cta);
+            border: 1px solid rgba(225, 185, 106, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .hero h1 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 500;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.125rem;
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+        }
+        .hero-ctas {
+            display: flex;
+            gap: 1.25rem;
+            align-items: center;
+        }
+        .btn {
+            padding: 0.9rem 2.2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-gold {
+            background: var(--gold-cta);
+            color: var(--primary-bg);
+            box-shadow: 0 10px 20px rgba(225, 185, 106, 0.15);
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            background: #d4af37;
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-white);
+            border: 1px solid var(--border-divider);
+        }
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--text-white);
+        }
+
+        /* Mockup Card */
+        .hero-mockup {
+            flex-shrink: 0;
+            perspective: 1000px;
+        }
+        .balance-card-mockup {
+            width: 380px;
+            height: 230px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%), 
+                        radial-gradient(circle at top right, var(--brand-accent), var(--primary-bg));
+            border-radius: 20px;
+            padding: 2rem;
+            border: 0.5px solid var(--border-divider);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transform: rotateY(-10deg) rotateX(10deg);
+            transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: rotateY(-10deg) rotateX(10deg) translateY(0); }
+            50% { transform: rotateY(-10deg) rotateX(10deg) translateY(-15px); }
+        }
+        .mock-chip {
+            width: 45px;
+            height: 35px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 6px;
+        }
+        .mock-balance-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .mock-balance-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* Features strip */
+        .features {
+            background-color: var(--off-white-bg);
+            color: var(--primary-bg);
+            padding: 5rem 8%;
+        }
+        .section-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 4rem;
+        }
+        .section-header h2 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        .section-header p {
+            color: #64748b;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+        .feature-card {
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        }
+        .feature-icon-box {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: rgba(29, 158, 117, 0.1);
+            color: var(--brand-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .feature-card h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+        .feature-card p {
+            font-size: 0.875rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        /* Trust & Security */
+        .trust {
+            padding: 6rem 8%;
+            border-top: 1px solid var(--border-divider);
+            display: flex;
+            align-items: center;
+            gap: 6rem;
+            background: radial-gradient(circle at bottom left, rgba(225, 185, 106, 0.05), transparent 45%);
+        }
+        .trust-content {
+            flex: 1;
+        }
+        .trust h2 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+        .trust p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+        .trust-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .trust-badge-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface-card);
+            border: 0.5px solid var(--border-divider);
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+        }
+        .trust-badge-item i {
+            color: var(--brand-accent);
+        }
+        .trust-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            border-top: 1px solid var(--border-divider);
+            padding-top: 2rem;
+        }
+        .stat-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--brand-accent);
+            margin-bottom: 4px;
+        }
+        .stat-lbl {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* How it works */
+        .how-works {
+            background-color: var(--off-white-bg);
+            color: var(--primary-bg);
+            padding: 6rem 8%;
+        }
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+            position: relative;
+        }
+        .flow-step {
+            text-align: center;
+            position: relative;
+        }
+        .flow-step-num {
+            width: 48px;
+            height: 48px;
+            background: var(--brand-primary);
+            color: white;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.25rem;
+        }
+        .flow-step h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+        .flow-step p {
+            font-size: 0.9rem;
+            color: #64748b;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 6rem 8%;
+            background: var(--primary-bg);
+            text-align: center;
+            overflow: hidden;
+        }
+        .testimonial-slider-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .testimonial-slide {
+            background: var(--surface-card);
+            border: 0.5px solid var(--border-divider);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            display: none;
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .testimonial-slide.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .rating {
+            color: var(--gold-cta);
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+        }
+        .quote {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            font-weight: 500;
+            color: var(--text-white);
+        }
+        .author {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .author-info h4 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: left;
+        }
+        .author-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: left;
+        }
+        .dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 2rem;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border-divider);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .dot.active {
+            background: var(--brand-accent);
+            width: 24px;
+            border-radius: 5px;
+        }
+
+        /* Footer */
+        footer {
+            background: #07121b;
+            padding: 5rem 8% 2rem;
+            border-top: 1px solid var(--border-divider);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+        .footer-brand p {
+            color: var(--text-muted);
+            margin: 1.5rem 0;
+            max-width: 320px;
+        }
+        .app-badges {
+            display: flex;
+            gap: 12px;
+        }
+        .app-badge {
+            background: var(--surface-card);
+            border: 1px solid var(--border-divider);
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .app-badge:hover {
+            border-color: var(--brand-accent);
+        }
+        .footer-cols h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            color: var(--text-white);
+        }
+        .footer-cols ul {
+            list-style: none;
+        }
+        .footer-cols ul li {
+            margin-bottom: 0.75rem;
+        }
+        .footer-cols ul li a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            transition: color 0.3s;
+        }
+        .footer-cols ul li a:hover {
+            color: var(--brand-accent);
+        }
+        .footer-bottom {
+            border-top: 1px solid var(--border-divider);
+            padding-top: 2rem;
+            text-align: center;
+        }
+        .footer-bottom p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .footer-socials {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .footer-socials a {
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+        .footer-socials a:hover {
+            color: var(--brand-accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/" class="logo">
+            Nova<span>Pay</span>
+        </a>
+        <nav>
+            <a href="#features">Features</a>
+            <a href="#security">Security</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#testimonials">Reviews</a>
+        </nav>
+        <a href="/onboarding" class="nav-btn">Launch App</a>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content animate-fade-in-up">
+            <div class="license-badge">
+                <i data-feather="shield" style="width: 14px; height: 14px; vertical-align: middle;"></i> CBN licensed + NDIC insured
+            </div>
+            <h1>Banking built for modern Nigeria</h1>
+            <p>Experience safe, borderless digital banking with up to 15% smart vault interest, instant transfers, and a unified USD savings wallet.</p>
+            <div class="hero-ctas">
+                <a href="/onboarding" class="btn btn-gold">Open account free <i data-feather="arrow-right" style="width: 18px; height: 18px;"></i></a>
+                <a href="/onboarding" class="btn btn-ghost">Watch demo</a>
+            </div>
+        </div>
+        
+        <div class="hero-mockup animate-fade-in-up" style="animation-delay: 0.1s;">
+            <div class="balance-card-mockup">
+                <div class="flex justify-between align-center">
+                    <span style="font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 1.25rem;">NovaPay</span>
+                    <div class="mock-chip"></div>
+                </div>
+                <div>
+                    <p class="mock-balance-title">Total Portfolio</p>
+                    <h2 class="mock-balance-val">₦150,000.00</h2>
+                </div>
+                <div class="flex justify-between align-center" style="font-size: 0.75rem; color: var(--text-muted);">
+                    <span>•••• 5678</span>
+                    <span>PREMIUM MEMBER</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features strip -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>Fintech features that set us apart</h2>
+            <p>Premium banking services optimized for your everyday transactions, smart savings, and investments.</p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon-box"><i data-feather="send"></i></div>
+                <h3>Instant Transfers</h3>
+                <p>Send and receive money instantly across all Nigerian banks with zero fails and immediate receipt confirmations.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon-box"><i data-feather="lock"></i></div>
+                <h3>Smart Savings</h3>
+                <p>Lock funds in our high-interest vaults and earn up to 15% interest per annum paid out hourly into your wallet.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon-box"><i data-feather="globe"></i></div>
+                <h3>USD Dollar Wallet</h3>
+                <p>Convert Naira to USD instantly, hedge against local inflation, and build stable global savings.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon-box"><i data-feather="percent"></i></div>
+                <h3>Zero Monthly Fees</h3>
+                <p>Enjoy free account maintenance, zero sms charges, and free card delivery directly to your doorstep.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust & Security -->
+    <section class="trust" id="security">
+        <div class="hero-mockup">
+            <div class="balance-card-mockup" style="background: linear-gradient(135deg, rgba(29, 158, 117, 0.1) 0%, rgba(93, 202, 165, 0.02) 100%), #132736; border-color: var(--border-divider);">
+                <div class="flex justify-between align-center">
+                    <i data-feather="key" style="color: var(--brand-accent); width: 28px; height: 28px;"></i>
+                    <span style="font-size: 0.65rem; background: rgba(93, 202, 165, 0.1); color: var(--brand-accent); padding: 4px 10px; border-radius: 12px; font-weight: 700;">256-BIT ENCRYPTED</span>
+                </div>
+                <div>
+                    <h4 class="font-headings" style="margin-bottom: 6px; font-size: 1.15rem;">Advanced Fraud Shield</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">Real-time automated transaction limits, geographic validation, and hardware-bound biometric authentication protect your wealth.</p>
+                </div>
+                <div class="flex justify-between align-center">
+                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--gold-cta);">NOVA SECURE</span>
+                    <i data-feather="shield-off" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="trust-content">
+            <h2>Trust and bank-grade security</h2>
+            <p>NovaPay is fully certified by the Central Bank of Nigeria (CBN). All user deposit vaults are protected and fully insured by the NDIC up to statutory limits, giving you absolute peace of mind.</p>
+            
+            <div class="trust-grid">
+                <div class="trust-badge-item">
+                    <i data-feather="lock"></i>
+                    <div>
+                        <h4 class="font-headings" style="font-size: 0.9rem;">256-Bit Security</h4>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">Military-grade database encryption.</p>
+                    </div>
+                </div>
+                <div class="trust-badge-item">
+                    <i data-feather="check-circle"></i>
+                    <div>
+                        <h4 class="font-headings" style="font-size: 0.9rem;">CBN Licensed</h4>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">Registered under CBN rules.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="trust-stats">
+                <div>
+                    <div class="stat-val">2M+</div>
+                    <div class="stat-lbl">Active Users</div>
+                </div>
+                <div>
+                    <div class="stat-val">₦500B+</div>
+                    <div class="stat-lbl">Processed</div>
+                </div>
+                <div>
+                    <div class="stat-val">4.8★</div>
+                    <div class="stat-lbl">Rating</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how-works" id="flow">
+        <div class="section-header">
+            <h2>Get set up in minutes</h2>
+            <p>Ditch the long queues and paperwork. NovaPay is designed to get you banking in three clean steps.</p>
+        </div>
+        <div class="flow-grid">
+            <div class="flow-step">
+                <div class="flow-step-num">1</div>
+                <h3>Download App</h3>
+                <p>Get the NovaPay mobile simulator on App Store or Google Play for free.</p>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-num">2</div>
+                <h3>Verify Identity</h3>
+                <p>Provide your BVN or NIN details. Secure verification takes under 2 minutes.</p>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-num">3</div>
+                <h3>Start Banking</h3>
+                <p>Fund your wallet, send instant transfers, and initiate smart savings.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials" id="testimonials">
+        <div class="section-header">
+            <h2>Reviewed by thousands of Nigerians</h2>
+            <p>See why modern businesses and individuals trust NovaPay to drive their financial growth.</p>
+        </div>
+        
+        <div class="testimonial-slider-container">
+            <div class="testimonial-slide active">
+                <div class="rating">★★★★★</div>
+                <p class="quote">"NovaPay completely changed how I save. The smart locked vault yields a real 15% interest that pays out hourly. I've earned over ₦20,000 in interest in just two months!"</p>
+                <div class="author">
+                    <div class="author-avatar">FB</div>
+                    <div class="author-info">
+                        <h4>Fatima Bello</h4>
+                        <p>Kano, Nigeria</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-slide">
+                <div class="rating">★★★★★</div>
+                <p class="quote">"Transfers are blazing fast! I run an e-commerce shop in Lagos and send/receive dozens of transfers daily. Zero fail rates and instant NIP receipt name confirmation."</p>
+                <div class="author">
+                    <div class="author-avatar">CO</div>
+                    <div class="author-info">
+                        <h4>Chidera Okafor</h4>
+                        <p>Lagos, Nigeria</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-slide">
+                <div class="rating">★★★★★</div>
+                <p class="quote">"Managing virtual cards is seamless. I fund and freeze cards in one click, meaning I don't worry about rogue online subscriptions. Highly recommended."</p>
+                <div class="author">
+                    <div class="author-avatar">EN</div>
+                    <div class="author-info">
+                        <h4>Emeka Nwosu</h4>
+                        <p>Enugu, Nigeria</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-slide">
+                <div class="rating">★★★★★</div>
+                <p class="quote">"I hedged my savings in the Dollar Vault during the recent inflation surge. NovaPay kept my family's wealth secure. Outstanding user interface!"</p>
+                <div class="author">
+                    <div class="author-avatar">AI</div>
+                    <div class="author-info">
+                        <h4>Aisha Ibrahim</h4>
+                        <p>Abuja, Nigeria</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dots">
+            <div class="dot active" onclick="setSlide(0)"></div>
+            <div class="dot" onclick="setSlide(1)"></div>
+            <div class="dot" onclick="setSlide(2)"></div>
+            <div class="dot" onclick="setSlide(3)"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo">Nova<span>Pay</span></a>
+                <p>NovaPay is a secure, premium digital banking ecosystem engineered to drive the next generation of financial growth in Nigeria.</p>
+                <div class="app-badges">
+                    <a href="/onboarding" class="app-badge"><i data-feather="play" style="width: 14px; height: 14px;"></i> Google Play</a>
+                    <a href="/onboarding" class="app-badge"><i data-feather="cpu" style="width: 14px; height: 14px;"></i> App Store</a>
+                </div>
+            </div>
+            <div class="footer-cols">
+                <h3>Product</h3>
+                <ul>
+                    <li><a href="/onboarding">Personal Banking</a></li>
+                    <li><a href="/onboarding">USD Wallet</a></li>
+                    <li><a href="/onboarding">Virtual Cards</a></li>
+                    <li><a href="/onboarding">Smart Savings</a></li>
+                </ul>
+            </div>
+            <div class="footer-cols">
+                <h3>Security</h3>
+                <ul>
+                    <li><a href="/onboarding">Privacy Policy</a></li>
+                    <li><a href="/onboarding">Fraud Shield</a></li>
+                    <li><a href="/onboarding">BVN Verification</a></li>
+                    <li><a href="/onboarding">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-cols">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="/onboarding">About Us</a></li>
+                    <li><a href="/onboarding">Careers</a></li>
+                    <li><a href="/onboarding">Support Center</a></li>
+                    <li><a href="/onboarding">Press Kit</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-socials">
+                <a href="#"><i data-feather="twitter"></i></a>
+                <a href="#"><i data-feather="instagram"></i></a>
+                <a href="#"><i data-feather="linkedin"></i></a>
+                <a href="#"><i data-feather="facebook"></i></a>
+            </div>
+            <p>NovaPay is a digital banking platform. Banking services are provided by licensed partner banks, certified under Central Bank of Nigeria guidelines. Deposits are NDIC insured up to statutory limit of ₦500,000.00. © 2026 NovaPay Technologies. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Init Feather
+        feather.replace();
+
+        // Carousel Testimonials
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.testimonial-slide');
+        const dots = document.querySelectorAll('.dot');
+        
+        function setSlide(index) {
+            slides.forEach(s => s.classList.remove('active'));
+            dots.forEach(d => d.classList.remove('active'));
+            
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        // Auto slide carousel every 5 seconds
+        setInterval(() => {
+            let next = (currentSlide + 1) % slides.length;
+            setSlide(next);
+        }, 5000);
+    </script>
+</body>
+</html>

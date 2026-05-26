@@ -118,19 +118,31 @@ def init_db():
             # Column already exists
             pass
             
-    # 3. Post-migration: populate accounts missing an account number
-    users = c.execute("SELECT id, fullname FROM users WHERE account_number IS NULL").fetchall()
-    for u in users:
-        acc_num = generate_unique_account_num(c)
-        # Set default password and pin hashes for existing users
-        default_pwd_hash = hash_sha256("password")
-        default_pin_hash = hash_sha256("1234")
-        c.execute('''
-            UPDATE users 
-            SET account_number = ?, password_hash = ?, pin_hash = ? 
-            WHERE id = ?
-        ''', (acc_num, default_pwd_hash, default_pin_hash, u['id']))
-    
+    # Seed default Nigerian bank users if users table is empty
+    count = c.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    if count == 0:
+        seed_users = [
+            ("Fatima Bello", "fatima@novapay.ng", "08022223333", "3055448822"),
+            ("Chidera Okafor", "chidera@novapay.ng", "08033334444", "3011223344"),
+            ("Emeka Nwosu", "emeka@novapay.ng", "0809876543", "3098765432"),
+            ("Sarah Musa", "sarah@novapay.ng", "0802938475", "3029384756"),
+            ("Aisha Ibrahim", "aisha@novapay.ng", "0807766554", "3077665544")
+        ]
+        default_pwd = hash_sha256("password")
+        default_pin = hash_sha256("1234")
+        for name, email, phone, acc_num in seed_users:
+            c.execute('''
+                INSERT INTO users (fullname, email, phone, balance, password_hash, pin_hash, is_frozen, account_number)
+                VALUES (?, ?, ?, 150000.00, ?, ?, 0, ?)
+            ''', (name, email, phone, default_pwd, default_pin, acc_num))
+            
+            user_id = c.lastrowid
+            date_str = datetime.utcnow().isoformat() + 'Z'
+            c.execute('''
+                INSERT INTO notifications (user_id, type, title, message, date)
+                VALUES (?, 'success', 'Welcome to NovaPay', ?, ?)
+            ''', (user_id, f'Hello {name}, welcome to your premium digital bank account {acc_num}.', date_str))
+            
     conn.commit()
     conn.close()
 

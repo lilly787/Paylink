@@ -20,27 +20,28 @@
         gap: var(--space-sm);
     }
     .avatar-sm {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
         border-radius: var(--radius-full);
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 700;
     }
     .notification-btn {
         position: relative;
-        background: var(--surface);
-        border: 1px solid var(--glass-border);
+        background: var(--surface-card);
+        border: 0.5px solid var(--border-divider);
         border-radius: var(--radius-full);
         width: 40px;
         height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--text-main);
+        color: var(--text-white);
         box-shadow: var(--shadow-sm);
     }
     .notification-badge {
@@ -49,19 +50,19 @@
         right: 10px;
         width: 8px;
         height: 8px;
-        background: var(--danger);
+        background: var(--error-debit);
         border-radius: var(--radius-full);
     }
     
     /* Balance Card */
     .balance-card {
-        background: linear-gradient(135deg, #090d16 0%, #111827 100%);
-        border: 1px solid rgba(212, 175, 55, 0.35); /* Elegant gold boundary border */
+        background: var(--surface-card);
+        border: 0.5px solid var(--border-divider);
         border-radius: var(--radius-lg);
         padding: var(--space-lg);
-        color: white;
+        color: var(--text-white);
         margin-bottom: var(--space-lg);
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+        box-shadow: var(--shadow-md);
         position: relative;
         overflow: hidden;
     }
@@ -72,74 +73,112 @@
         right: -20%;
         width: 200px;
         height: 200px;
-        background: rgba(212, 175, 55, 0.05); /* Gold watermark */
+        background: rgba(93, 202, 165, 0.03);
         border-radius: var(--radius-full);
     }
-    .balance-label {
-        font-size: 0.875rem;
-        opacity: 0.9;
+    .balance-label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: var(--text-muted);
         margin-bottom: 0.25rem;
     }
     .balance-amount {
-        font-size: 2.5rem;
+        font-family: 'Syne', sans-serif;
+        font-size: 2.25rem;
         font-weight: 700;
         margin-bottom: var(--space-sm);
-        letter-spacing: -0.02em;
-        color: var(--primary); /* Gleaming Gold */
+        letter-spacing: -0.01em;
+        color: var(--brand-accent);
     }
     .account-number {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        font-size: 0.875rem;
-        opacity: 0.9;
-        background: rgba(0, 0, 0, 0.15);
-        padding: 0.5rem 0.75rem;
+        font-size: 0.825rem;
+        color: var(--text-muted);
+        background: rgba(13, 31, 45, 0.4);
+        padding: 0.4rem 0.75rem;
         border-radius: var(--radius-sm);
         display: inline-flex;
+        border: 0.5px solid var(--border-divider);
+    }
+
+    /* Sub-ledger columns */
+    .sub-ledger-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-lg);
+    }
+    .sub-ledger-card {
+        background: var(--surface-card);
+        border: 0.5px solid var(--border-divider);
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        text-align: left;
+    }
+    .sub-ledger-card p {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-bottom: 2px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .sub-ledger-card h4 {
+        font-family: 'Syne', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
     }
 
     /* Quick Actions */
     .section-title {
-        font-size: 1.125rem;
-        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 1rem;
+        font-weight: 500;
         margin-bottom: var(--space-md);
+        text-align: left;
+        color: var(--text-white);
     }
     .quick-actions {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: var(--space-sm);
-        margin-bottom: var(--space-xl);
+        margin-bottom: var(--space-lg);
     }
-    .action-item {
+    .action-btn {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.5rem;
         text-decoration: none;
-        color: var(--text-main);
+        color: var(--text-white);
         cursor: pointer;
     }
     .action-icon {
-        width: 56px;
-        height: 56px;
-        background: var(--surface);
-        border-radius: var(--radius-lg);
+        width: 52px;
+        height: 52px;
+        background: var(--surface-card);
+        border: 0.5px solid var(--border-divider);
+        border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--secondary);
+        color: var(--brand-accent);
         box-shadow: var(--shadow-sm);
         transition: transform 0.2s ease;
-        border: 1px solid var(--glass-border);
     }
-    .action-item:hover .action-icon {
+    .action-btn:hover .action-icon {
         transform: translateY(-2px);
+        border-color: var(--brand-primary);
     }
     .action-label {
-        font-size: 0.75rem;
+        font-size: 0.725rem;
         font-weight: 500;
         text-align: center;
+        color: var(--text-muted);
     }
 
     /* Transactions */
@@ -152,11 +191,14 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: var(--surface);
+        background: var(--surface-card);
         padding: var(--space-sm) var(--space-md);
         border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--glass-border);
+        border: 0.5px solid var(--border-divider);
+        transition: transform 0.2s ease;
+    }
+    .transaction-item:hover {
+        transform: translateY(-1px);
     }
     .txn-left {
         display: flex;
@@ -164,48 +206,57 @@
         gap: var(--space-md);
     }
     .txn-icon {
-        width: 40px;
-        height: 40px;
+        width: 38px;
+        height: 38px;
         border-radius: var(--radius-full);
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(124, 58, 237, 0.1);
-        color: var(--primary);
-    }
-    .txn-icon.expense {
-        background: rgba(244, 63, 94, 0.1);
-        color: var(--danger);
-    }
-    .txn-icon.income {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success);
+        background: rgba(93, 202, 165, 0.08);
+        color: var(--brand-accent);
     }
     .txn-details h4 {
-        font-size: 0.875rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
         margin-bottom: 0.125rem;
     }
     .txn-details p {
-        font-size: 0.75rem;
+        font-size: 0.725rem;
         color: var(--text-muted);
     }
     .txn-amount {
+        font-family: 'Syne', sans-serif;
         font-weight: 600;
         font-size: 0.875rem;
     }
-    .txn-amount.expense {
-        color: var(--text-main);
+    .txn-amount.debit {
+        color: var(--error-debit);
     }
-    .txn-amount.income {
-        color: var(--success);
+    .txn-amount.credit {
+        color: var(--success-credit);
     }
     .empty-state {
         text-align: center;
         padding: var(--space-xl) var(--space-md);
-        background: var(--surface);
+        background: var(--surface-card);
         border-radius: var(--radius-md);
-        border: 1px dashed var(--glass-border);
+        border: 1px dashed var(--border-divider);
         color: var(--text-muted);
+    }
+
+    /* Progress bar */
+    .category-bar-bg {
+        width: 100%;
+        height: 6px;
+        background: var(--border-divider);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+    }
+    .category-bar-fill {
+        height: 100%;
+        border-radius: var(--radius-full);
+        transition: width 0.6s ease;
     }
 </style>
 {% endblock %}
@@ -217,92 +268,109 @@
         <div class="user-greeting">
             <div class="avatar-sm" id="user-avatar">JD</div>
             <div>
-                <p class="text-xs text-muted">Good Morning,</p>
-                <h2 class="font-bold" id="user-name">Loading...</h2>
+                <p class="text-xs text-muted" style="text-align: left;">Good Morning,</p>
+                <h2 class="font-bold text-sm" id="user-name" style="margin: 0; font-family: 'DM Sans', sans-serif; font-weight: 500;">Loading...</h2>
             </div>
         </div>
         <a href="{{ url_for('notifications') }}" class="notification-btn">
-            <i data-feather="bell"></i>
+            <i data-feather="bell" style="width: 18px; height: 18px;"></i>
             <span class="notification-badge"></span>
         </a>
     </header>
 
     <!-- Balance Card -->
-    <a href="{{ url_for('analytics') }}" style="text-decoration: none; color: inherit; display: block;">
-        <div class="balance-card">
-            <p class="balance-label">Total Balance (Tap for Analytics) <i data-feather="trending-up" style="width: 12px; height: 12px; vertical-align: middle; margin-left: 2px;"></i></p>
-            <h1 class="balance-amount" id="display-balance">₦0.00</h1>
-            <div class="account-number" onclick="event.stopPropagation(); copyAccountToClipboard()">
-                <span id="display-account-number">3000000000</span>
-                <i data-feather="copy" style="width: 14px; height: 14px; cursor: pointer;"></i>
-            </div>
+    <div class="balance-card">
+        <div class="balance-label-row">
+            <span>TOTAL BALANCE (NGN)</span>
+            <i data-feather="eye" style="width: 16px; height: 16px; cursor: pointer; color: var(--brand-accent);" id="balance-toggle" onclick="toggleBalanceVisibility()"></i>
         </div>
-    </a>
+        <h1 class="balance-amount" id="display-balance">₦0.00</h1>
+        <div class="account-number" onclick="copyAccountToClipboard()">
+            <span id="display-account-number">30••••••••</span>
+            <i data-feather="copy" style="width: 13px; height: 13px; cursor: pointer;"></i>
+        </div>
+    </div>
 
-    <!-- Financial Sub-Ledger Balances -->
-    <div style="display: flex; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-lg);">
-        <div class="glass-card" style="flex: 1; padding: 12px 14px; text-align: left; background: var(--surface); border: 1px solid var(--glass-border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
-            <p class="text-xs text-muted" style="margin-bottom: 4px; display: flex; align-items: center; gap: 4px;"><i data-feather="lock" style="width: 12px; height: 12px; color: var(--primary);"></i> Savings Vault</p>
-            <h4 class="font-bold text-sm" style="color: var(--primary);">₦45,000.00</h4>
+    <!-- Sub-ledger Balances -->
+    <div class="sub-ledger-grid">
+        <div class="sub-ledger-card">
+            <p><i data-feather="lock" style="width: 11px; height: 11px; color: var(--gold-cta);"></i> Smart Vault (15%)</p>
+            <h4 style="color: var(--gold-cta);">₦45,000.00</h4>
         </div>
-        <div class="glass-card" style="flex: 1; padding: 12px 14px; text-align: left; background: var(--surface); border: 1px solid var(--glass-border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
-            <p class="text-xs text-muted" style="margin-bottom: 4px; display: flex; align-items: center; gap: 4px;"><i data-feather="activity" style="width: 12px; height: 12px; color: var(--secondary);"></i> Investments</p>
-            <h4 class="font-bold text-sm" style="color: var(--secondary);">₦15,000.00</h4>
+        <div class="sub-ledger-card">
+            <p><i data-feather="globe" style="width: 11px; height: 11px; color: var(--brand-accent);"></i> Dollar Wallet</p>
+            <h4 style="color: var(--brand-accent);">$120.00</h4>
+        </div>
+    </div>
+
+    <!-- Oracle Feed -->
+    <div class="glass-card mb-lg" style="padding: var(--space-md); background: rgba(255,255,255,0.04);">
+        <div class="flex justify-between align-center mb-xs">
+            <span class="text-xs font-semibold text-muted">Live Oracle Exchange Feed</span>
+            <span class="text-xs font-bold text-main" id="oracle-source">Fetching…</span>
+        </div>
+        <div class="flex justify-between align-center">
+            <div>
+                <h4 class="font-bold" id="oracle-rate" style="font-family: 'Syne', sans-serif; font-size: 1.75rem; color: var(--gold-accent); margin: 0;">₦--</h4>
+                <p class="text-xs text-muted" style="margin: 0;">USD → NGN exchange rate</p>
+            </div>
+            <div style="text-align: right;">
+                <p class="text-xs text-muted" id="oracle-update" style="margin: 0;">Updated just now</p>
+                <p class="text-xs" style="margin: 4px 0 0; color: var(--brand-accent);">Oracle connected</p>
+            </div>
         </div>
     </div>
 
     <!-- Quick Actions -->
     <h3 class="section-title">Quick Actions</h3>
     <div class="quick-actions">
-        <a href="{{ url_for('deposit') }}" class="action-btn" style="text-decoration: none; color: inherit;">
-            <div class="action-icon"><i data-feather="plus"></i></div>
-            <span>Deposit</span>
+        <a href="{{ url_for('transfer') }}" class="action-btn">
+            <div class="action-icon"><i data-feather="send" style="width: 20px; height: 20px;"></i></div>
+            <span class="action-label">Send</span>
         </a>
-        <a href="{{ url_for('cards') }}" class="action-btn" style="text-decoration: none; color: inherit;">
-            <div class="action-icon" style="background: rgba(124, 58, 237, 0.1); color: var(--primary);"><i data-feather="credit-card"></i></div>
-            <span>Cards</span>
+        <a href="{{ url_for('deposit') }}" class="action-btn">
+            <div class="action-icon"><i data-feather="download" style="width: 20px; height: 20px;"></i></div>
+            <span class="action-label">Receive</span>
         </a>
-        <a href="{{ url_for('transfer') }}" class="action-btn" style="text-decoration: none; color: inherit;">
-            <div class="action-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i data-feather="send"></i></div>
-            <span>Transfer</span>
+        <a href="{{ url_for('bills', tab='electricity') }}" class="action-btn">
+            <div class="action-icon"><i data-feather="zap" style="width: 20px; height: 20px;"></i></div>
+            <span class="action-label">Pay Bills</span>
         </a>
-        <a href="{{ url_for('bills') }}" class="action-btn" style="text-decoration: none; color: inherit;">
-            <div class="action-icon" style="background: rgba(244, 63, 94, 0.1); color: var(--danger);"><i data-feather="phone"></i></div>
-            <span>Airtime</span>
-        </a>
-        <a href="{{ url_for('bills') }}" class="action-btn" style="text-decoration: none; color: inherit;">
-            <div class="action-icon" style="background: rgba(6, 182, 212, 0.1); color: var(--secondary);"><i data-feather="wifi"></i></div>
-            <span>Data</span>
+        <a href="{{ url_for('bills', tab='airtime') }}" class="action-btn">
+            <div class="action-icon"><i data-feather="phone" style="width: 20px; height: 20px;"></i></div>
+            <span class="action-label">Airtime</span>
         </a>
     </div>
 
     <!-- Monthly Budget Spent Tracker -->
-    <div class="glass-card mb-lg" style="padding: var(--space-sm) var(--space-md); border-color: rgba(212, 175, 55, 0.2); text-align: left; background: var(--surface); border-radius: var(--radius-lg);">
+    <div class="glass-card mb-lg" style="padding: var(--space-sm) var(--space-md); text-align: left;">
         <div class="flex justify-between align-center mb-xs">
             <span class="text-xs font-semibold text-muted">Monthly Spending Limit</span>
             <span class="text-xs font-bold text-main" id="budget-ratio" style="font-size: 11px;">₦34,500.00 / ₦80,000.00</span>
         </div>
-        <div class="category-bar-bg" style="width: 100%; height: 6px; background: var(--glass-border); border-radius: var(--radius-full); overflow: hidden;">
-            <div class="category-bar-fill" style="width: 43%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: var(--radius-full);"></div>
+        <div class="category-bar-bg">
+            <div class="category-bar-fill" style="width: 43%; background: var(--brand-primary);"></div>
         </div>
-        <p class="text-xs text-muted" style="font-size: 0.675rem; margin-top: 6px; display: flex; align-items: center; gap: 4px;"><i data-feather="info" style="width: 12px; height: 12px;"></i> You have used <b>43%</b> of your monthly budget. Auto-limits active.</p>
+        <p class="text-xs text-muted" style="font-size: 0.675rem; margin-top: 6px; display: flex; align-items: center; gap: 4px;"><i data-feather="info" style="width: 12px; height: 12px; color: var(--brand-accent);"></i> Monthly budget caps are active and monitored.</p>
     </div>
 
     <!-- Dynamic Premium Marketing Slide -->
-    <div class="glass-card mb-lg" style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.04) 0%, rgba(56, 189, 248, 0.04) 100%); border-color: var(--glass-border); border-radius: var(--radius-lg); display: flex; align-items: center; gap: var(--space-md); padding: 12px 16px; text-align: left;">
-        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(212, 175, 55, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-            <i data-feather="award" style="width: 18px; height: 18px;"></i>
+    <a href="/save" style="text-decoration: none;">
+        <div class="glass-card mb-lg" style="background: linear-gradient(135deg, rgba(225, 185, 106, 0.05) 0%, rgba(29, 158, 117, 0.02) 100%); display: flex; align-items: center; gap: var(--space-md); padding: 12px 16px; text-align: left;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(225, 185, 106, 0.1); color: var(--gold-cta); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i data-feather="award" style="width: 18px; height: 18px;"></i>
+            </div>
+            <div style="flex: 1;">
+                <h4 class="font-bold text-xs" style="color: var(--gold-cta); margin-bottom: 2px;">Premium Vault Upgrade</h4>
+                <p class="text-xs text-muted" style="font-size: 0.7rem; line-height: 1.35;">Earn up to <b>15% p.a. interest</b> when you lock your idle funds.</p>
+            </div>
         </div>
-        <div style="flex: 1;">
-            <h4 class="font-bold text-xs" style="color: var(--primary); margin-bottom: 2px;">Premium Wealth Grow</h4>
-            <p class="text-xs text-muted" style="font-size: 0.7rem; line-height: 1.35;">Lock funds in Vaults today and earn up to <b>15.5% per annum</b> paid out hourly.</p>
-        </div>
-    </div>
+    </a>
 
     <!-- Recent Transactions -->
     <div class="flex justify-between align-center mb-md">
         <h3 class="section-title" style="margin-bottom: 0;">Recent Transactions</h3>
-        <a href="{{ url_for('history') }}" class="text-xs font-medium" style="color: var(--secondary); text-decoration: none;">See All</a>
+        <a href="{{ url_for('history') }}" class="text-xs font-medium" style="color: var(--brand-accent); text-decoration: none;">See All</a>
     </div>
     
     <div class="transaction-list" id="recent-transactions">
@@ -313,17 +381,48 @@
 
 {% block extra_js %}
 <script>
+    let realBalanceRaw = 0;
+    let isBalanceHidden = false;
+
     document.addEventListener('DOMContentLoaded', async () => {
         // Initialize user
         const user = await refreshUser(); // Make sure we get fresh data
-        document.getElementById('user-name').textContent = user.fullname.split(' ')[0] || user.fullname;
+        document.getElementById('user-name').textContent = user.fullname;
         document.getElementById('user-avatar').textContent = getInitials(user.fullname);
 
-        document.getElementById('display-balance').textContent = formatCurrency(user.balance);
-        document.getElementById('display-account-number').textContent = user.account_number || '3000000000';
+        realBalanceRaw = user.balance;
+        
+        // Setup initial balance view
+        const savedHideState = localStorage.getItem('novapay_balance_hidden') === 'true';
+        isBalanceHidden = savedHideState;
+        updateBalanceDisplay();
+
+        const cleanAcc = user.account_number || '3000000000';
+        document.getElementById('display-account-number').textContent = `${cleanAcc.substring(0,2)} ${cleanAcc.substring(2,6)} ${cleanAcc.substring(6)}`;
 
         await renderTransactions();
+        await renderOracleFeed();
     });
+
+    function toggleBalanceVisibility() {
+        isBalanceHidden = !isBalanceHidden;
+        localStorage.setItem('novapay_balance_hidden', isBalanceHidden);
+        updateBalanceDisplay();
+    }
+
+    function updateBalanceDisplay() {
+        const amtEl = document.getElementById('display-balance');
+        const iconEl = document.getElementById('balance-toggle');
+        
+        if (isBalanceHidden) {
+            amtEl.textContent = '₦••••••';
+            iconEl.setAttribute('data-feather', 'eye-off');
+        } else {
+            amtEl.textContent = formatCurrency(realBalanceRaw);
+            iconEl.setAttribute('data-feather', 'eye');
+        }
+        feather.replace();
+    }
 
     function copyAccountToClipboard() {
         const user = getUser();
@@ -340,7 +439,7 @@
                 <div class="empty-state">
                     <i data-feather="inbox" style="width: 40px; height: 40px; margin-bottom: 10px; opacity: 0.5;"></i>
                     <p>No recent transactions.</p>
-                    <p class="text-xs mt-sm">Make a transfer to see it here.</p>
+                    <p class="text-xs mt-sm">Fund account or make a transfer to start.</p>
                 </div>
             `;
             feather.replace();
@@ -354,13 +453,13 @@
             html += `
                 <a href="/transaction_details?txn_id=${txn.id}" class="transaction-item" style="text-decoration: none; color: inherit; cursor: pointer;">
                     <div class="txn-left">
-                        <div class="txn-icon ${isExpense ? 'expense' : 'income'}"><i data-feather="${icon}"></i></div>
+                        <div class="txn-icon"><i data-feather="${icon}"></i></div>
                         <div class="txn-details">
-                            <h4>${txn.title}</h4>
-                            <p>${formatRelDate(txn.date)}</p>
+                            <h4 style="text-align:left;">${txn.title}</h4>
+                            <p style="text-align:left;">${formatRelDate(txn.date)}</p>
                         </div>
                     </div>
-                    <div class="txn-amount ${isExpense ? 'expense' : 'income'}">
+                    <div class="txn-amount ${isExpense ? 'debit' : 'credit'}">
                         ${isExpense ? '-' : '+'}${formatCurrency(txn.amount)}
                     </div>
                 </a>
@@ -368,6 +467,20 @@
         });
         list.innerHTML = html;
         feather.replace();
+    }
+
+    async function renderOracleFeed() {
+        const oracle = await fetchOracleRates();
+        if (!oracle) {
+            document.getElementById('oracle-rate').textContent = 'Unavailable';
+            document.getElementById('oracle-source').textContent = 'Oracle offline';
+            document.getElementById('oracle-update').textContent = 'Could not retrieve data';
+            return;
+        }
+
+        document.getElementById('oracle-rate').textContent = `₦${oracle.usd_ngn.toFixed(2)}`;
+        document.getElementById('oracle-source').textContent = oracle.is_fallback ? 'Fallback Oracle' : 'Live Oracle';
+        document.getElementById('oracle-update').textContent = new Date(oracle.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 </script>
 {% endblock %}
@@ -384,11 +497,11 @@
     </a>
     <a href="{{ url_for('transfer') }}" class="nav-item">
         <i data-feather="send"></i>
-        <span>Transfer</span>
+        <span>Pay</span>
     </a>
-    <a href="{{ url_for('history') }}" class="nav-item">
-        <i data-feather="clock"></i>
-        <span>History</span>
+    <a href="/save" class="nav-item">
+        <i data-feather="lock"></i>
+        <span>Save</span>
     </a>
     <a href="{{ url_for('profile') }}" class="nav-item">
         <i data-feather="user"></i>

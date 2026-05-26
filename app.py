@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, session
 import database
+import oracle
 import re
 import random
 from datetime import datetime, timedelta
@@ -412,6 +413,14 @@ def api_pay_bills():
         
     updated_user = database.get_user_by_id(user_id)
     return jsonify({"success": True, "balance": updated_user['balance'], "txn_id": txn_id})
+
+# -- Oracle API --
+
+@app.route('/api/oracle/rates')
+def api_oracle_rates():
+    oracle_payload = oracle.fetch_oracle_rates()
+    return jsonify({"success": True, "oracle": oracle_payload})
+
 
 # -- Notifications API --
 

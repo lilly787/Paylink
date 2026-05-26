@@ -103,41 +103,55 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(124, 58, 237, 0.1);
-        color: var(--primary);
+        background: rgba(29, 158, 117, 0.1);
+        color: var(--brand-primary);
     }
     .txn-icon.expense {
-        background: rgba(244, 63, 94, 0.1);
+        background: rgba(240, 149, 149, 0.1);
         color: var(--danger);
     }
     .txn-icon.income {
-        background: rgba(16, 185, 129, 0.1);
+        background: rgba(93, 202, 165, 0.1);
         color: var(--success);
     }
     .txn-details h4 {
         font-size: 0.875rem;
         margin-bottom: 0.125rem;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 500;
+        color: var(--text-white);
     }
     .txn-details p {
         font-size: 0.75rem;
         color: var(--text-muted);
     }
     .txn-amount {
+        font-family: 'Syne', sans-serif;
         font-weight: 600;
         font-size: 0.875rem;
     }
     .txn-amount.expense {
-        color: var(--text-main);
+        color: var(--danger);
     }
     .txn-amount.income {
         color: var(--success);
+    }
+    .date-header {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--brand-accent);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: var(--space-md);
+        margin-bottom: var(--space-xs);
+        padding-left: var(--space-xs);
     }
     .empty-state {
         text-align: center;
         padding: var(--space-xl) var(--space-md);
         background: var(--surface);
         border-radius: var(--radius-md);
-        border: 1px dashed var(--glass-border);
+        border: 0.5px solid var(--border-divider);
         color: var(--text-muted);
         margin-top: var(--space-md);
     }
@@ -148,8 +162,10 @@
 <div class="history-container animate-fade-in-up">
     <!-- Header -->
     <header class="header">
-        <h1>Transactions</h1>
-        <a href="#" class="text-muted"><i data-feather="filter"></i></a>
+        <h1 class="font-headings">Transactions</h1>
+        <button onclick="downloadStatement()" class="btn btn-primary btn-outline" style="width: auto; padding: 0.5rem 0.75rem; font-size: 0.75rem; margin-top: 0; display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radius-sm);">
+            <i data-feather="download" style="width: 12px; height: 12px;"></i> Export
+        </button>
     </header>
 
     <div class="search-bar">
@@ -174,6 +190,13 @@
     let currentFilter = 'all';
     let searchQuery = '';
 
+    function downloadStatement() {
+        showToast('Generating PDF statement...', 'info');
+        setTimeout(() => {
+            showToast('Download complete! NovaPay_Statement.pdf', 'success');
+        }, 1500);
+    }
+
     async function renderTransactions() {
         const txns = await getTransactions();
         const list = document.getElementById('transaction-list');
@@ -185,7 +208,7 @@
         }
         
         if (searchQuery) {
-            filtered = filtered.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()));
+            filtered = filtered.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || (t.description && t.description.toLowerCase().includes(searchQuery.toLowerCase())));
         }
 
         if (filtered.length === 0) {
@@ -200,16 +223,27 @@
         }
 
         let html = '';
+        let lastDateStr = '';
         filtered.forEach(txn => {
             const isExpense = txn.type === 'expense';
             const icon = isExpense ? 'arrow-up-right' : 'arrow-down-left';
+            
+            // Format date for section header: e.g. "May 25, 2026"
+            const txnDate = new Date(txn.date);
+            const dateStr = txnDate.toLocaleDateString('en-NG', { month: 'short', day: 'numeric', year: 'numeric' });
+            
+            if (dateStr !== lastDateStr) {
+                html += `<div class="date-header font-headings">${dateStr}</div>`;
+                lastDateStr = dateStr;
+            }
+
             html += `
                 <a href="/transaction_details?txn_id=${txn.id}" class="transaction-item" style="text-decoration: none; color: inherit; cursor: pointer;">
                     <div class="txn-left">
                         <div class="txn-icon ${isExpense ? 'expense' : 'income'}"><i data-feather="${icon}"></i></div>
                         <div class="txn-details">
                             <h4>${txn.title}</h4>
-                            <p>${formatRelDate(txn.date)}</p>
+                            <p>${txn.description || 'NIP Bank Transfer'}</p>
                         </div>
                     </div>
                     <div class="txn-amount ${isExpense ? 'expense' : 'income'}">
@@ -256,11 +290,11 @@
     </a>
     <a href="{{ url_for('transfer') }}" class="nav-item">
         <i data-feather="send"></i>
-        <span>Transfer</span>
+        <span>Pay</span>
     </a>
-    <a href="{{ url_for('history') }}" class="nav-item active">
-        <i data-feather="clock"></i>
-        <span>History</span>
+    <a href="/save" class="nav-item">
+        <i data-feather="lock"></i>
+        <span>Save</span>
     </a>
     <a href="{{ url_for('profile') }}" class="nav-item">
         <i data-feather="user"></i>

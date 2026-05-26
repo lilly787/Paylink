@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Transfer{% endblock %}
+{% block title %}Send Money{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -19,74 +19,37 @@
         margin: 0;
     }
     .back-btn {
-        color: var(--text-main);
+        color: var(--text-white);
         display: flex;
         align-items: center;
         justify-content: center;
         width: 40px;
         height: 40px;
-        background: var(--surface);
+        background: var(--surface-card);
         border-radius: var(--radius-full);
         box-shadow: var(--shadow-sm);
     }
     
-    .recent-recipients {
-        margin-bottom: var(--space-lg);
-    }
-    .recipient-list {
-        display: flex;
-        gap: var(--space-sm);
-        overflow-x: auto;
-        padding-bottom: var(--space-xs);
-        scrollbar-width: none;
-    }
-    .recipient-list::-webkit-scrollbar {
-        display: none;
-    }
-    .recipient-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        min-width: 70px;
-        cursor: pointer;
-    }
-    .recipient-avatar {
-        width: 56px;
-        height: 56px;
-        border-radius: var(--radius-full);
-        background: var(--surface);
-        border: 2px solid var(--primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        color: var(--primary);
-    }
-    .recipient-name {
-        font-size: 0.75rem;
-        text-align: center;
-        color: var(--text-muted);
-    }
-
     .amount-input-group {
         text-align: center;
         margin-bottom: var(--space-xl);
     }
     .currency-symbol {
-        font-size: 2rem;
+        font-family: 'Syne', sans-serif;
+        font-size: 2.25rem;
         font-weight: 700;
-        color: var(--text-muted);
+        color: var(--brand-accent);
         vertical-align: middle;
     }
     .amount-input {
-        font-size: 3rem;
+        font-family: 'Syne', sans-serif;
+        font-size: 2.5rem;
         font-weight: 700;
         width: 200px;
         text-align: center;
         border: none;
         background: transparent;
-        color: var(--text-main);
+        color: var(--text-white);
         outline: none;
     }
     .amount-input::placeholder {
@@ -99,12 +62,26 @@
         margin-top: var(--space-sm);
     }
 
-    /* Modal dialog */
+    /* Recipient Validation Details */
+    .validation-badge-box {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        background: rgba(93, 202, 165, 0.08);
+        border: 0.5px solid rgba(93, 202, 165, 0.2);
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        margin-top: var(--space-xs);
+        animation: fadeInUp 0.4s ease forwards;
+        text-align: left;
+    }
+
+    /* Modal Dialog */
     .modal {
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(15, 23, 42, 0.85);
+        background: rgba(13, 31, 45, 0.9);
         backdrop-filter: blur(8px);
         z-index: 1000;
         align-items: center;
@@ -112,14 +89,14 @@
         padding: var(--space-md);
     }
     .modal-content {
-        background: var(--surface);
-        border: 1px solid var(--glass-border);
+        background: var(--surface-card);
+        border: 0.5px solid var(--border-divider);
         border-radius: var(--radius-lg);
         width: 100%;
         max-width: 360px;
         padding: var(--space-lg);
         box-shadow: var(--shadow-lg);
-        animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: fadeInUp 0.4s ease forwards;
         position: relative;
     }
     .modal-close {
@@ -132,10 +109,40 @@
         cursor: pointer;
     }
 
-    /* AI assistant tags */
+    /* Success Fullscreen Overlay Animation */
+    .success-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: var(--primary-bg);
+        z-index: 9999;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-white);
+        text-align: center;
+        padding: 2rem;
+    }
+    .success-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(29, 158, 117, 0.1);
+        border: 2px solid var(--brand-primary);
+        color: var(--brand-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 2rem;
+        animation: scalePop 0.5s ease-in-out forwards;
+    }
+    @keyframes scalePop {
+        0% { transform: scale(0.6); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
     .sim-tag {
-        background: rgba(124, 58, 237, 0.1);
-        color: var(--primary);
+        background: rgba(93, 202, 165, 0.08);
+        color: var(--brand-accent);
         font-size: 0.675rem;
         font-weight: 700;
         padding: 2px 8px;
@@ -145,7 +152,6 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
-    .gap-xs { gap: var(--space-xs); }
 </style>
 {% endblock %}
 
@@ -156,56 +162,51 @@
         <a href="{{ url_for('dashboard') }}" class="back-btn">
             <i data-feather="arrow-left"></i>
         </a>
-        <h1>Transfer Money</h1>
+        <h1>Send Money</h1>
     </header>
 
     <!-- AI Fast Pay NLP Assistant Panel -->
-    <div class="glass-card mb-md" style="border-color: rgba(124, 58, 237, 0.3); background: rgba(124, 58, 237, 0.02);">
+    <div class="glass-card mb-md" style="border-color: rgba(93, 202, 165, 0.25); background: rgba(93, 202, 165, 0.02);">
         <span class="sim-tag"><i data-feather="cpu" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 2px;"></i> AI Fast Pay Assistant</span>
-        <h3 class="font-bold text-xs text-muted mb-xs">NLP Parser Input</h3>
-        <p class="text-xs text-muted mb-sm">Type instructions: e.g. <i>"send 5k to Sarah"</i>, <i>"pay electricity 10k"</i> or <i>"recharge 500 Glo 08012345678"</i></p>
+        <h3 class="font-bold text-xs text-muted mb-xs">NLP Command Parser</h3>
+        <p class="text-xs text-muted mb-sm">Type instructions: e.g. <i>"send 5k to Sarah"</i>, <i>"pay electricity 10k"</i> or <i>"recharge 500 MTN 08022223333"</i></p>
         
-        <div class="flex gap-xs align-center">
-            <input type="text" id="ai-input" class="input-field" placeholder="Try 'send 5k to Sarah'" style="margin-bottom: 0; background: rgba(0,0,0,0.15); border: 1px solid var(--glass-border); padding: 0.5rem 0.75rem; font-size: 0.875rem;">
+        <div class="flex gap-sm align-center">
+            <input type="text" id="ai-input" class="input-field" placeholder="Try 'send 5k to Sarah'" style="margin-bottom: 0; background: rgba(0,0,0,0.15); border: 1px solid var(--border-divider); padding: 0.5rem 0.75rem; font-size: 0.875rem;">
             <button type="button" class="btn btn-primary" id="ai-process-btn" onclick="handleAiInterpret()" style="width: auto; padding: 0.5rem 1rem; font-size: 0.875rem; margin-top: 0;">Parse</button>
-        </div>
-    </div>
-
-    <!-- Recent Recipients -->
-    <div class="recent-recipients">
-        <h3 class="font-medium mb-sm text-sm">Recent Recipients</h3>
-        <div class="recipient-list">
-            <div class="recipient-item" onclick="comingSoon('Add Recipient')">
-                <div class="recipient-avatar" style="border-color: var(--glass-border); border-style: dashed; color: var(--text-muted); background: transparent;">
-                    <i data-feather="plus"></i>
-                </div>
-                <span class="recipient-name">New</span>
-            </div>
-            <div class="recipient-item" onclick="setRecipient('Sarah', '3029384756')">
-                <div class="recipient-avatar">SM</div>
-                <span class="recipient-name">Sarah</span>
-            </div>
-            <div class="recipient-item" onclick="setRecipient('Mike', '3098765432')">
-                <div class="recipient-avatar">MJ</div>
-                <span class="recipient-name">Mike</span>
-            </div>
-            <div class="recipient-item" onclick="setRecipient('Alex', '3055443322')">
-                <div class="recipient-avatar">AL</div>
-                <span class="recipient-name">Alex</span>
-            </div>
         </div>
     </div>
 
     <!-- Manual Transfer Form -->
     <form id="transfer-form" onsubmit="handleTransferSubmit(event)">
         <div class="glass-card mb-lg">
-            <div class="input-group" style="margin-bottom: 12px;">
-                <label class="input-label" for="recipient">Recipient Account Number</label>
-                <input type="text" id="recipient" class="input-field" placeholder="Enter 10-digit account number" style="border: none; padding-left: 0; background: transparent;" required>
+            <!-- Select Destination Bank -->
+            <div class="input-group" style="margin-bottom: 12px; text-align: left;">
+                <label class="input-label" for="bank-selector">Destination Bank</label>
+                <select id="bank-selector" class="input-field" style="background-color: var(--surface-card); color: var(--text-white); border: none; padding-left: 0;" required>
+                    <option value="NovaPay">NovaPay (Internal Transfer)</option>
+                    <option value="GTBank">Guaranty Trust Bank (GTB)</option>
+                    <option value="Zenith">Zenith Bank Plc</option>
+                    <option value="Access">Access Bank</option>
+                    <option value="UBA">United Bank for Africa (UBA)</option>
+                    <option value="Kuda">Kuda Microfinance Bank</option>
+                    <option value="Wema">Wema Bank (ALAT)</option>
+                </select>
             </div>
-            <div class="input-group" style="margin-bottom: 0;">
-                <label class="input-label" for="recipient-name">Recipient Name</label>
-                <input type="text" id="recipient-name" class="input-field" placeholder="Search or input name" style="border: none; padding-left: 0; background: transparent;" required>
+
+            <!-- Recipient Account -->
+            <div class="input-group" style="margin-bottom: 12px; text-align: left;">
+                <label class="input-label" for="recipient">Recipient Account Number</label>
+                <input type="number" id="recipient" class="input-field" placeholder="Enter 10-digit account number" style="border: none; padding-left: 0; background: transparent;" min="1000000000" max="9999999999" oninput="handleAccountInput(this)" required>
+            </div>
+
+            <!-- Auto-resolved NIP Recipient Name -->
+            <div class="validation-badge-box" id="validation-box">
+                <i data-feather="user-check" style="color: var(--brand-accent); width: 16px; height: 16px;"></i>
+                <div style="flex:1;">
+                    <p class="text-xs text-muted" style="font-size: 10px; text-transform: uppercase;">NIP Verified Name</p>
+                    <h4 class="font-headings" id="resolved-name" style="font-size: 0.875rem; font-weight: 500;">Resolving...</h4>
+                </div>
             </div>
         </div>
 
@@ -230,7 +231,7 @@
 <div class="modal" id="pin-modal">
     <div class="modal-content text-center">
         <button class="modal-close" onclick="closePinModal()"><i data-feather="x"></i></button>
-        <div style="color: var(--secondary); margin-bottom: var(--space-sm);">
+        <div style="color: var(--brand-accent); margin-bottom: var(--space-sm);">
             <i data-feather="shield" style="width: 40px; height: 40px;"></i>
         </div>
         <h2 class="text-xl font-bold mb-xs">Authorize Transaction</h2>
@@ -243,11 +244,20 @@
         <button type="button" class="btn btn-primary mt-sm" id="confirm-pin-btn" onclick="executeAuthorizedTransaction()">Submit Authorization</button>
     </div>
 </div>
+
+<!-- Success Overlay Animation -->
+<div class="success-overlay" id="success-overlay-panel">
+    <div class="success-circle">
+        <i data-feather="check" style="width: 40px; height: 40px;"></i>
+    </div>
+    <h2 class="text-2xl font-bold mb-sm" style="font-family: 'DM Sans', sans-serif; font-weight: 500;">Transfer Successful</h2>
+    <p class="text-sm text-muted mb-lg" id="success-msg">Your transaction was processed successfully via NIP.</p>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    let activeTxnPayload = null; // Store transaction fields while waiting for PIN
+    let activeTxnPayload = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
         let user = getUser();
@@ -256,12 +266,30 @@
         document.getElementById('display-balance').textContent = formatCurrency(user.balance);
     });
 
-    function setRecipient(name, acc) {
-        document.getElementById('recipient').value = acc;
-        document.getElementById('recipient-name').value = name;
+    // Account verification simulator via NIP name lookup
+    function handleAccountInput(el) {
+        const val = el.value.trim();
+        const box = document.getElementById('validation-box');
+        const nameEl = document.getElementById('resolved-name');
+        
+        if (val.length === 10) {
+            box.style.display = 'flex';
+            nameEl.textContent = 'Resolving name...';
+            
+            setTimeout(() => {
+                // Mock validations matching seed account numbers
+                if (val === '3029384756') nameEl.textContent = 'Sarah Musa';
+                else if (val === '3098765432') nameEl.textContent = 'Emeka Nwosu';
+                else if (val === '3055448822') nameEl.textContent = 'Fatima Bello';
+                else if (val === '3011223344') nameEl.textContent = 'Chidera Okafor';
+                else if (val === '3077665544') nameEl.textContent = 'Aisha Ibrahim';
+                else nameEl.textContent = 'Validated Recipient';
+            }, 600);
+        } else {
+            box.style.display = 'none';
+        }
     }
 
-    // Modal Triggers
     function openPinModal(summary, payload) {
         document.getElementById('pin-summary').innerHTML = summary;
         document.getElementById('txn-pin').value = '';
@@ -275,13 +303,15 @@
         activeTxnPayload = null;
     }
 
-    // Manual Transfer Submission Form
     function handleTransferSubmit(event) {
         event.preventDefault();
+        const bank = document.getElementById('bank-selector').value;
         const account = document.getElementById('recipient').value;
-        const name = document.getElementById('recipient-name').value;
         const amount = parseFloat(document.getElementById('amount').value);
         const desc = document.getElementById('description').value || 'Transfer';
+        const box = document.getElementById('resolved-name');
+        
+        const resolvedName = (document.getElementById('validation-box').style.display === 'flex') ? box.textContent : 'Recipient';
 
         const user = getUser();
         if (amount > user.balance) {
@@ -292,15 +322,14 @@
         const payload = {
             type: 'transfer',
             amount: amount,
-            recipient_name: name,
+            recipient_name: resolvedName,
             recipient_acc: account,
-            desc: desc
+            desc: `${bank} Transfer: ${desc}`
         };
 
-        openPinModal(`Sending <b>${formatCurrency(amount)}</b> to <b>${name}</b>`, payload);
+        openPinModal(`Sending <b>${formatCurrency(amount)}</b> to <b>${resolvedName}</b> (${bank})`, payload);
     }
 
-    // AI NLP Parser handler
     async function handleAiInterpret() {
         const text = document.getElementById('ai-input').value;
         const user = getUser();
@@ -328,7 +357,6 @@
             if (result.success) {
                 document.getElementById('ai-input').value = '';
                 
-                // Construct target payload based on AI action parsed
                 if (result.action === 'transfer') {
                     const payload = {
                         type: 'transfer',
@@ -370,7 +398,6 @@
         }
     }
 
-    // Modal Confirmation Execution
     async function executeAuthorizedTransaction() {
         if (!activeTxnPayload) return;
         const pin = document.getElementById('txn-pin').value;
@@ -384,7 +411,6 @@
         confirmBtn.innerHTML = '<i data-feather="loader" class="spin" style="width: 14px; height: 14px; vertical-align: middle;"></i> Authorizing...';
         feather.replace();
 
-        // 1. Double check balance
         const user = getUser();
         if (activeTxnPayload.amount > user.balance) {
             showToast('Insufficient balance', 'error');
@@ -395,11 +421,10 @@
             return;
         }
 
-        // 2. Submit based on payload type
         if (activeTxnPayload.type === 'transfer') {
             const res = await addTransaction(
                 activeTxnPayload.amount, 
-                `Transfer to ${activeTxnPayload.recipient_name}`, 
+                activeTxnPayload.recipient_name, 
                 activeTxnPayload.desc, 
                 activeTxnPayload.recipient_name, 
                 activeTxnPayload.recipient_acc, 
@@ -412,10 +437,16 @@
             feather.replace();
 
             if (res && res.success) {
-                showToast('Transfer completed!', 'success');
+                // Launch success overlay animation
+                document.getElementById('pin-modal').style.display = 'none';
+                document.getElementById('success-msg').textContent = `Successfully sent ${formatCurrency(activeTxnPayload.amount)} to ${activeTxnPayload.recipient_name}.`;
+                const overlay = document.getElementById('success-overlay-panel');
+                overlay.style.display = 'flex';
+                feather.replace();
+
                 setTimeout(() => {
                     window.location.href = `/transaction_details?txn_id=${res.txn_id}`;
-                }, 1200);
+                }, 2000);
             } else {
                 closePinModal();
             }
@@ -434,10 +465,15 @@
             feather.replace();
 
             if (res && res.success) {
-                showToast('Bill paid successfully!', 'success');
+                document.getElementById('pin-modal').style.display = 'none';
+                document.getElementById('success-msg').textContent = `Successfully paid ${formatCurrency(activeTxnPayload.amount)} for ${activeTxnPayload.provider}.`;
+                const overlay = document.getElementById('success-overlay-panel');
+                overlay.style.display = 'flex';
+                feather.replace();
+
                 setTimeout(() => {
                     window.location.href = `/transaction_details?txn_id=${res.txn_id}`;
-                }, 1200);
+                }, 2000);
             } else {
                 closePinModal();
             }
@@ -458,11 +494,11 @@
     </a>
     <a href="{{ url_for('transfer') }}" class="nav-item active">
         <i data-feather="send"></i>
-        <span>Transfer</span>
+        <span>Pay</span>
     </a>
-    <a href="{{ url_for('history') }}" class="nav-item">
-        <i data-feather="clock"></i>
-        <span>History</span>
+    <a href="/save" class="nav-item">
+        <i data-feather="lock"></i>
+        <span>Save</span>
     </a>
     <a href="{{ url_for('profile') }}" class="nav-item">
         <i data-feather="user"></i>

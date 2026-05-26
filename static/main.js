@@ -173,6 +173,19 @@ function formatRelDate(isoString) {
     return `${date.toLocaleDateString()}, ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 }
 
+async function fetchOracleRates() {
+    try {
+        const response = await fetch('/api/oracle/rates');
+        const result = await response.json();
+        if (result.success && result.oracle) {
+            return result.oracle;
+        }
+    } catch (e) {
+        console.error('Oracle fetch failed', e);
+    }
+    return null;
+}
+
 // Feature Not Available yet
 window.comingSoon = function(feature) {
     showToast(`${feature} is simulated or coming in the next build!`, 'info');

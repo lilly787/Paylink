@@ -182,7 +182,7 @@
         <div class="tab active" id="tab-airtime" onclick="switchTab('airtime')">Airtime</div>
         <div class="tab" id="tab-data" onclick="switchTab('data')">Data</div>
         <div class="tab" id="tab-electricity" onclick="switchTab('electricity')">Electricity</div>
-        <div class="tab" id="tab-tv" onclick="switchTab('tv')">Cable TV</div>
+        <div class="tab" id="tab-tv" onclick="switchTab('tv')">TV & Utilities</div>
     </div>
 
     <!-- Provider Selection -->
@@ -217,7 +217,7 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary mt-md" id="pay-btn">Authorize Payment</button>
+        <button type="submit" class="btn btn-gold mt-md" id="pay-btn">Authorize Payment</button>
     </form>
 </div>
 
@@ -225,7 +225,7 @@
 <div class="modal" id="pin-modal">
     <div class="modal-content text-center">
         <button class="modal-close" onclick="closePinModal()"><i data-feather="x"></i></button>
-        <div style="color: var(--secondary); margin-bottom: var(--space-sm);">
+        <div style="color: var(--gold-cta); margin-bottom: var(--space-sm);">
             <i data-feather="shield" style="width: 40px; height: 40px;"></i>
         </div>
         <h2 class="text-xl font-bold mb-xs">Authorize Utility</h2>
@@ -235,7 +235,7 @@
             <input type="password" id="txn-pin" class="input-field text-center" placeholder="••••" maxlength="4" style="letter-spacing: 0.5em; font-size: 1.5rem; max-width: 160px; margin: 0 auto; background-color: rgba(0,0,0,0.15);" required>
         </div>
         
-        <button type="button" class="btn btn-primary mt-sm" id="confirm-pin-btn" onclick="executeAuthorizedBillPayment()">Authorize Charge</button>
+        <button type="button" class="btn btn-gold mt-sm" id="confirm-pin-btn" onclick="executeAuthorizedBillPayment()">Authorize Charge</button>
     </div>
 </div>
 {% endblock %}
@@ -255,6 +255,12 @@
             { id: 'Glo', label: 'Glo', color: '#009900', text: 'white' },
             { id: '9mobile', label: '9mobile', color: '#006600', text: 'white' }
         ],
+        data: [
+            { id: 'MTN', label: 'MTN Data', color: '#ffcc00', text: 'black' },
+            { id: 'Airtel', label: 'Airtel Data', color: '#ff0000', text: 'white' },
+            { id: 'Glo', label: 'Glo Data', color: '#009900', text: 'white' },
+            { id: 'Spectranet', label: 'Spectranet', color: '#f97316', text: 'white' }
+        ],
         electricity: [
             { id: 'EKEDC', label: 'Eko Disco', color: '#2563eb', text: 'white' },
             { id: 'IKEDC', label: 'Ikeja Disco', color: '#0891b2', text: 'white' },
@@ -263,18 +269,34 @@
         tv: [
             { id: 'DSTV', label: 'DSTV', color: '#0369a1', text: 'white' },
             { id: 'GOtv', label: 'GOtv', color: '#15803d', text: 'white' },
-            { id: 'StarTimes', label: 'StarTimes', color: '#b91c1c', text: 'white' }
+            { id: 'LAWMA', label: 'LAWMA Waste', color: '#16a34a', text: 'white' }
         ]
     };
 
     // Packages datasets
     const packagesData = {
-        data: [
-            { id: '1GB', label: '1GB Daily', price: 300, valid: '1 Day' },
-            { id: '2GB', label: '2GB 2-Day', price: 500, valid: '2 Days' },
-            { id: '5GB', label: '5GB Weekly', price: 1500, valid: '7 Days' },
-            { id: '10GB', label: '10GB Monthly', price: 2500, valid: '30 Days' }
-        ],
+        data: {
+            'MTN': [
+                { id: 'mtn-1gb', label: 'MTN 1GB Daily', price: 350, valid: '1 Day' },
+                { id: 'mtn-5gb', label: 'MTN 5GB Weekly', price: 1500, valid: '7 Days' },
+                { id: 'mtn-15gb', label: 'MTN 15GB Monthly', price: 5000, valid: '30 Days' }
+            ],
+            'Airtel': [
+                { id: 'airtel-1gb', label: 'Airtel 1GB Daily', price: 350, valid: '1 Day' },
+                { id: 'airtel-5gb', label: 'Airtel 5GB Weekly', price: 1500, valid: '7 Days' },
+                { id: 'airtel-15gb', label: 'Airtel 15GB Monthly', price: 5000, valid: '30 Days' }
+            ],
+            'Glo': [
+                { id: 'glo-1gb', label: 'Glo 1GB Daily', price: 300, valid: '1 Day' },
+                { id: 'glo-5gb', label: 'Glo 5GB Weekly', price: 1300, valid: '7 Days' },
+                { id: 'glo-15gb', label: 'Glo 15GB Monthly', price: 4500, valid: '30 Days' }
+            ],
+            'Spectranet': [
+                { id: 'spec-unlimited', label: 'Spectranet Unlimited', price: 18500, valid: '30 Days' },
+                { id: 'spec-30gb', label: 'Spectranet 30GB Promo', price: 7500, valid: '30 Days' },
+                { id: 'spec-50gb', label: 'Spectranet 50GB Value', price: 11000, valid: '30 Days' }
+            ]
+        },
         tv: {
             'DSTV': [
                 { id: 'compact', label: 'DStv Compact', price: 12500, valid: 'Monthly' },
@@ -284,9 +306,9 @@
                 { id: 'jolli', label: 'GOtv Jolli', price: 3300, valid: 'Monthly' },
                 { id: 'max', label: 'GOtv Max', price: 5300, valid: 'Monthly' }
             ],
-            'StarTimes': [
-                { id: 'basic', label: 'Basic Bouquet', price: 3000, valid: 'Monthly' },
-                { id: 'super', label: 'Super Bouquet', price: 6500, valid: 'Monthly' }
+            'LAWMA': [
+                { id: 'lawma-res', label: 'LAWMA Residential', price: 3000, valid: 'Monthly' },
+                { id: 'lawma-comm', label: 'LAWMA Commercial', price: 12000, valid: 'Monthly' }
             ]
         }
     };
@@ -305,8 +327,7 @@
         const grid = document.getElementById('provider-grid');
         grid.innerHTML = '';
         
-        const cat = (tab === 'data') ? 'airtime' : tab; // Data uses telco operators
-        const providers = providerData[cat];
+        const providers = providerData[tab];
 
         document.getElementById('provider-title').textContent = (tab === 'electricity') ? 'Select Distribution Company' : 'Select Operator';
 
@@ -324,8 +345,21 @@
                 item.classList.add('active');
                 selectedProvider = p.id;
                 
-                // If TV package tab, update packages list dynamically based on operator
+                // If TV tab, update the label (since LAWMA has a different label)
+                const label = document.getElementById('identifier-label');
+                const input = document.getElementById('identifier-input');
                 if (currentTab === 'tv') {
+                    if (selectedProvider === 'LAWMA') {
+                        label.textContent = 'LAWMA Customer ID';
+                        input.placeholder = 'Enter LAWMA Account Number';
+                    } else {
+                        label.textContent = 'SmartCard / IUC Number';
+                        input.placeholder = 'Enter SmartCard Number';
+                    }
+                }
+                
+                // If TV or Data package tab, update packages list dynamically based on operator
+                if (currentTab === 'tv' || currentTab === 'data') {
                     renderBundles();
                 }
             };
@@ -345,8 +379,13 @@
             input.placeholder = 'Enter 11-digit Meter Number';
             input.type = 'number';
         } else if (tab === 'tv') {
-            label.textContent = 'SmartCard / IUC Number';
-            input.placeholder = 'Enter SmartCard Number';
+            if (selectedProvider === 'LAWMA') {
+                label.textContent = 'LAWMA Customer ID';
+                input.placeholder = 'Enter LAWMA Account Number';
+            } else {
+                label.textContent = 'SmartCard / IUC Number';
+                input.placeholder = 'Enter SmartCard Number';
+            }
             input.type = 'number';
         }
 
@@ -373,7 +412,7 @@
 
         let bundles = [];
         if (currentTab === 'data') {
-            bundles = packagesData.data;
+            bundles = packagesData.data[selectedProvider] || [];
         } else if (currentTab === 'tv') {
             bundles = packagesData.tv[selectedProvider] || [];
         }
@@ -384,8 +423,8 @@
             if (index === 0) selectedBundle = b;
 
             item.innerHTML = `
-                <div class="bundle-data">${b.label}</div>
-                <div class="bundle-price">₦${b.price.toLocaleString()}</div>
+                <div class="bundle-data font-headings">${b.label}</div>
+                <div class="bundle-price font-numbers">₦${b.price.toLocaleString()}</div>
                 <div class="bundle-validity">${b.valid}</div>
             `;
             item.onclick = () => {
@@ -443,7 +482,7 @@
         };
 
         if (currentTab === 'airtime') {
-            summary = `Purchase <b>₦${amount.toLocaleString()}</b> MTN/Glo Airtime for <b>${identifier}</b>`;
+            summary = `Purchase <b>₦${amount.toLocaleString()}</b> ${selectedProvider} Airtime for <b>${identifier}</b>`;
         } else if (currentTab === 'data') {
             summary = `Renew <b>${selectedBundle.label}</b> (₦${amount.toLocaleString()}) for <b>${identifier}</b>`;
         } else if (currentTab === 'electricity') {
@@ -503,13 +542,13 @@
         <i data-feather="credit-card"></i>
         <span>Cards</span>
     </a>
-    <a href="{{ url_for('transfer') }}" class="nav-item">
+    <a href="{{ url_for('transfer') }}" class="nav-item active">
         <i data-feather="send"></i>
-        <span>Transfer</span>
+        <span>Pay</span>
     </a>
-    <a href="{{ url_for('history') }}" class="nav-item">
-        <i data-feather="clock"></i>
-        <span>History</span>
+    <a href="/save" class="nav-item">
+        <i data-feather="lock"></i>
+        <span>Save</span>
     </a>
     <a href="{{ url_for('profile') }}" class="nav-item">
         <i data-feather="user"></i>

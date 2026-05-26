@@ -1,0 +1,814 @@
+{% extends 'base.html' %}
+
+{% block title %}Save & Invest{% endblock %}
+
+{% block extra_css %}
+<style>
+    .save-container {
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        min-height: 100vh;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+    .header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .back-btn {
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+        border: 0.5px solid var(--border-divider);
+    }
+
+    /* Sub-tabs inside Save/Invest */
+    .tab-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        padding: 4px;
+        margin-bottom: var(--space-lg);
+        border: 0.5px solid var(--border-divider);
+    }
+    .tab {
+        text-align: center;
+        padding: 0.625rem 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+    }
+    .tab.active {
+        background: var(--brand-primary);
+        color: white;
+    }
+
+    /* Section displays */
+    .save-view-section {
+        display: none;
+        animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .save-view-section.active {
+        display: block;
+    }
+
+    /* Vault Card details */
+    .vault-card {
+        margin-bottom: var(--space-md);
+        position: relative;
+    }
+    .vault-progress-row {
+        margin-top: var(--space-sm);
+        margin-bottom: var(--space-xs);
+    }
+    .progress-bar-bg {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: var(--radius-full);
+        background: var(--brand-accent);
+        transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Investment Portfolio and Chart */
+    .portfolio-value {
+        font-family: 'Syne', sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--brand-accent);
+        margin-top: 4px;
+    }
+    .chart-container {
+        width: 100%;
+        height: 120px;
+        margin-top: var(--space-sm);
+        position: relative;
+    }
+    .chart-svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Loan Dial/Meter */
+    .loan-score-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+    }
+    .score-circle {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .score-text {
+        text-align: center;
+    }
+    .score-value {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--success-credit);
+        line-height: 1;
+    }
+    .score-label {
+        font-size: 0.675rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
+
+    /* Checklist items */
+    .checklist-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        padding: var(--space-sm) 0;
+        border-bottom: 0.5px solid var(--border-divider);
+    }
+    .checklist-item:last-child {
+        border-bottom: none;
+    }
+    .check-circle {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1.5px solid var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .check-circle.checked {
+        border-color: var(--brand-accent);
+        background: var(--brand-accent);
+        color: var(--primary-bg);
+    }
+
+    /* Modals styling */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(13, 31, 45, 0.9);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-md);
+    }
+    .modal-content {
+        background: var(--surface-card);
+        border: 0.5px solid var(--border-divider);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 360px;
+        padding: var(--space-lg);
+        box-shadow: var(--shadow-lg);
+        animation: fadeInUp 0.4s ease forwards;
+        position: relative;
+    }
+    .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+
+    .form-slider {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-full);
+        outline: none;
+        margin: var(--space-sm) 0;
+        accent-color: var(--brand-primary);
+    }
+    .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    /* Emergency lock badge button */
+    .emergency-lock-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-sm) var(--space-md);
+        border-radius: var(--radius-md);
+        background: rgba(240, 149, 149, 0.05);
+        border: 0.5px solid rgba(240, 149, 149, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="save-container animate-fade-in-up">
+    <!-- Header -->
+    <header class="header">
+        <a href="{{ url_for('dashboard') }}" class="back-btn">
+            <i data-feather="arrow-left"></i>
+        </a>
+        <h1 class="font-headings">Save & Invest</h1>
+    </header>
+
+    <!-- Sub-tab Bar -->
+    <div class="tab-container">
+        <div class="tab active" id="tab-savings" onclick="switchSection('savings')">Savings</div>
+        <div class="tab" id="tab-invest" onclick="switchSection('invest')">Invest</div>
+        <div class="tab" id="tab-loans" onclick="switchSection('loans')">Loans</div>
+    </div>
+
+    <!-- 1. SAVINGS VAULTS SECTION -->
+    <div class="save-view-section active" id="sec-savings">
+        <div class="glass-card mb-md text-center">
+            <span class="text-xs text-muted font-medium">TOTAL SAVINGS BALANCE</span>
+            <div class="font-numbers text-3xl font-bold mt-xs text-success" id="display-total-saved">₦0.00</div>
+        </div>
+
+        <!-- Flex Vault Card (10% p.a.) -->
+        <div class="glass-card vault-card">
+            <div class="flex justify-between align-center">
+                <div>
+                    <h3 class="font-headings text-sm">Flex Vault (10% p.a.)</h3>
+                    <p class="text-xs text-muted">Daily withdrawals allowed</p>
+                </div>
+                <div class="font-numbers text-sm font-bold text-main" id="display-flex-saved">₦0.00</div>
+            </div>
+            
+            <div class="vault-progress-row">
+                <div class="flex justify-between text-xs text-muted mb-xs">
+                    <span>Progress to Goal</span>
+                    <span id="flex-progress-percent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="flex-progress-bar" style="width: 0%;"></div>
+                </div>
+                <div class="flex justify-between text-xs text-muted mt-xs">
+                    <span id="flex-current-label">₦0.00</span>
+                    <span id="flex-target-label">Goal: ₦0.00</span>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary btn-outline mt-sm" style="padding: 0.5rem 1rem; font-size: 0.825rem;" onclick="openFundModal('flex')">Fund Vault</button>
+        </div>
+
+        <!-- Locked Vault Card (15% p.a.) -->
+        <div class="glass-card vault-card">
+            <div class="flex justify-between align-center">
+                <div>
+                    <h3 class="font-headings text-sm">Locked Vault (15% p.a.) <i data-feather="lock" style="width: 12px; height: 12px; margin-left: 2px; color: var(--gold-cta); vertical-align: middle;"></i></h3>
+                    <p class="text-xs text-muted">Locks until Dec 31, 2026</p>
+                </div>
+                <div class="font-numbers text-sm font-bold text-main" id="display-locked-saved">₦0.00</div>
+            </div>
+            
+            <div class="vault-progress-row">
+                <div class="flex justify-between text-xs text-muted mb-xs">
+                    <span>Progress to Goal</span>
+                    <span id="locked-progress-percent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="locked-progress-bar" style="width: 0%; background: var(--gold-cta);"></div>
+                </div>
+                <div class="flex justify-between text-xs text-muted mt-xs">
+                    <span id="locked-current-label">₦0.00</span>
+                    <span id="locked-target-label">Goal: ₦0.00</span>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary btn-outline mt-sm" style="padding: 0.5rem 1rem; font-size: 0.825rem;" onclick="openFundModal('locked')">Fund Vault</button>
+        </div>
+
+        <!-- Emergency Lock status toggle -->
+        <div class="emergency-lock-container mb-md">
+            <div>
+                <h4 class="font-headings text-xs" style="color: var(--error-debit);">Nova Shield Emergency Lock</h4>
+                <p class="text-xs text-muted" style="font-size: 10px;">Blocks all instant withdrawals to prevent impulse spending</p>
+            </div>
+            <div class="flex align-center">
+                <input type="checkbox" id="emergency-lock-toggle" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--error-debit);" onchange="toggleEmergencyLock(this)">
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. INVESTMENTS SECTION -->
+    <div class="save-view-section" id="sec-invest">
+        <!-- Portfolio Card -->
+        <div class="glass-card mb-md">
+            <span class="text-xs text-muted font-medium">TOTAL PORTFOLIO VALUE</span>
+            <div class="portfolio-value font-numbers" id="display-portfolio">₦0.00</div>
+            
+            <!-- Sleek Glow Vector Chart -->
+            <div class="chart-container">
+                <svg class="chart-svg" viewBox="0 0 100 30" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="var(--brand-accent)" stop-opacity="0.25"/>
+                            <stop offset="100%" stop-color="var(--brand-accent)" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 0 25 Q 20 18, 40 22 T 80 10 T 100 5 L 100 30 L 0 30 Z" fill="url(#chartGrad)"/>
+                    <path d="M 0 25 Q 20 18, 40 22 T 80 10 T 100 5" fill="none" stroke="var(--brand-accent)" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="flex justify-between text-xs text-muted mt-xs">
+                <span>Jan</span>
+                <span>Mar</span>
+                <span>May (Current)</span>
+            </div>
+        </div>
+
+        <!-- Fixed Deposits (18% p.a.) -->
+        <div class="glass-card mb-md">
+            <span class="sim-tag" style="background: rgba(29, 158, 117, 0.1); color: var(--brand-accent); font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Guaranteed Return</span>
+            <h3 class="font-headings text-sm mt-xs">Fixed Deposit (Up to 18% p.a.)</h3>
+            <p class="text-xs text-muted mb-md">Invest funds for a fixed tenure with high yield.</p>
+            <button class="btn btn-gold" style="padding: 0.625rem 1.25rem; font-size: 0.875rem;" onclick="openInvestModal('fd')">Subscribe Fixed Deposit</button>
+        </div>
+
+        <!-- Treasury Bills (14.5% p.a.) -->
+        <div class="glass-card mb-md">
+            <span class="sim-tag" style="background: rgba(225, 185, 106, 0.1); color: var(--gold-cta); font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">Sovereign Security</span>
+            <h3 class="font-headings text-sm mt-xs">Federal Govt Treasury Bills (14.5% p.a.)</h3>
+            <p class="text-xs text-muted mb-md">Backed by the Central Bank of Nigeria sovereign guarantee.</p>
+            <button class="btn btn-gold" style="padding: 0.625rem 1.25rem; font-size: 0.875rem;" onclick="openInvestModal('tbills')">Buy Treasury Bills</button>
+        </div>
+    </div>
+
+    <!-- 3. LOANS SECTION -->
+    <div class="save-view-section" id="sec-loans">
+        <!-- Credit Score Meter -->
+        <div class="glass-card mb-md">
+            <div class="loan-score-container text-center">
+                <div class="score-circle">
+                    <!-- Dashboard Dial Circle border -->
+                    <svg style="position: absolute; top:0; left:0; width:100%; height:100%; transform: rotate(-90deg);">
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="6"/>
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="var(--brand-primary)" stroke-width="6" stroke-dasharray="314" stroke-dashoffset="78"/>
+                    </svg>
+                    <div class="score-text">
+                        <div class="score-value">750</div>
+                        <div class="score-label">CREDIT SCORE</div>
+                    </div>
+                </div>
+                <p class="text-xs text-muted mt-sm">Your score qualifies you for our premium interest rates (8% p.a.)</p>
+            </div>
+        </div>
+
+        <!-- Loan Request Checklist -->
+        <div class="glass-card mb-md">
+            <h3 class="font-headings text-sm mb-sm">Eligibility Checklist</h3>
+            <div class="checklist-item">
+                <div class="check-circle checked" id="chk-bvn"><i data-feather="check" style="width: 10px; height: 10px;"></i></div>
+                <div>
+                    <h4 class="font-headings text-xs">Link Valid BVN / NIN</h4>
+                    <p class="text-xs text-muted" style="font-size: 10px;">Required for identity verification</p>
+                </div>
+            </div>
+            <div class="checklist-item">
+                <div class="check-circle checked" id="chk-salary"><i data-feather="check" style="width: 10px; height: 10px;"></i></div>
+                <div>
+                    <h4 class="font-headings text-xs">Salary Account Link</h4>
+                    <p class="text-xs text-muted" style="font-size: 10px;">Verified by automated statement analyzer</p>
+                </div>
+            </div>
+            <div class="checklist-item">
+                <div class="check-circle" id="chk-credit" onclick="toggleCheck('credit')"></div>
+                <div>
+                    <h4 class="font-headings text-xs">Accept Auto-Debit Repayments</h4>
+                    <p class="text-xs text-muted" style="font-size: 10px;">Authorize automatic deductions on due dates</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slider Loan Amount Request Card -->
+        <div class="glass-card mb-md">
+            <div class="flex justify-between align-center mb-xs">
+                <span class="text-xs text-muted font-medium">LOAN AMOUNT</span>
+                <span class="font-numbers text-md font-bold text-main" id="display-loan-amount">₦500,000</span>
+            </div>
+            
+            <input type="range" id="loan-range" class="form-slider" min="100000" max="5000000" step="50000" value="500000" oninput="updateLoanCalculation(this.value)">
+            <div class="slider-labels mb-md">
+                <span>₦100k</span>
+                <span>₦2.5M</span>
+                <span>₦5M</span>
+            </div>
+
+            <!-- Loan duration tenure -->
+            <div class="input-group" style="text-align: left;">
+                <label class="input-label" for="loan-tenure">Repayment Tenure</label>
+                <select id="loan-tenure" class="input-field" style="background-color: var(--surface-card); color: var(--text-white); border: none; padding-left: 0;" onchange="updateLoanCalculation(document.getElementById('loan-range').value)">
+                    <option value="3">3 Months</option>
+                    <option value="6" selected>6 Months</option>
+                    <option value="12">12 Months</option>
+                </select>
+            </div>
+
+            <div class="flex justify-between text-xs mb-sm">
+                <span class="text-muted">Interest Rate (8% p.a.)</span>
+                <span class="text-main font-semibold" id="loan-interest-val">₦20,000.00</span>
+            </div>
+            <div class="flex justify-between text-xs mb-md">
+                <span class="text-muted">Estimated Monthly Repayment</span>
+                <span class="text-success font-bold" id="loan-monthly-repay">₦86,666.67</span>
+            </div>
+
+            <button class="btn btn-gold" id="apply-loan-btn" onclick="handleLoanApplication()">Request Instant Credit</button>
+        </div>
+    </div>
+</div>
+
+<!-- 4. FUND VAULT MODAL -->
+<div class="modal" id="fund-modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeFundModal()"><i data-feather="x"></i></button>
+        <h2 class="text-xl font-bold text-center mb-xs" id="fund-title">Fund Savings</h2>
+        <p class="text-xs text-muted text-center mb-md" id="fund-desc">Transfer funds to your savings vault</p>
+
+        <form onsubmit="executeFunding(event)">
+            <div class="input-group">
+                <label class="input-label" for="fund-amount">Amount (₦)</label>
+                <input type="number" id="fund-amount" class="input-field" placeholder="Enter amount to save" min="500" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label" for="fund-pin">Transaction PIN</label>
+                <input type="password" id="fund-pin" class="input-field text-center" placeholder="••••" maxlength="4" style="letter-spacing: 0.5em; font-size: 1.25rem; max-width: 140px; margin: 0 auto; background-color: rgba(0,0,0,0.15);" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-sm" id="fund-submit-btn">Add to Vault</button>
+        </form>
+    </div>
+</div>
+
+<!-- 5. INVEST PURCHASE MODAL -->
+<div class="modal" id="invest-modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeInvestModal()"><i data-feather="x"></i></button>
+        <h2 class="text-xl font-bold text-center mb-xs" id="invest-title">Subscribe Investment</h2>
+        <p class="text-xs text-muted text-center mb-md" id="invest-desc">Subscribe to our yield-bearing funds</p>
+
+        <form onsubmit="executeInvestment(event)">
+            <!-- FD Tenure select option -->
+            <div class="input-group" id="invest-tenure-group">
+                <label class="input-label" for="invest-tenure">Investment Duration</label>
+                <select id="invest-tenure" class="input-field" style="background-color: var(--surface-card); color: var(--text-white); border: none; padding-left: 0;">
+                    <option value="3">3 Months (14% p.a.)</option>
+                    <option value="6">6 Months (16% p.a.)</option>
+                    <option value="12" selected>12 Months (18% p.a.)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label" for="invest-amount">Investment Amount (₦)</label>
+                <input type="number" id="invest-amount" class="input-field" placeholder="Enter amount to invest" min="5000" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label" for="invest-pin">Transaction PIN</label>
+                <input type="password" id="invest-pin" class="input-field text-center" placeholder="••••" maxlength="4" style="letter-spacing: 0.5em; font-size: 1.25rem; max-width: 140px; margin: 0 auto; background-color: rgba(0,0,0,0.15);" required>
+            </div>
+
+            <button type="submit" class="btn btn-gold mt-sm" id="invest-submit-btn">Subscribe Portfolio</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentVaultType = ''; // 'flex' or 'locked'
+    let currentInvestType = ''; // 'fd' or 'tbills'
+    let checklistCreditChecked = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeSavingsData();
+        updateLoanCalculation(500000);
+        feather.replace();
+    });
+
+    function switchSection(section) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-${section}`).classList.add('active');
+
+        document.querySelectorAll('.save-view-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(`sec-${section}`).classList.add('active');
+        feather.replace();
+    }
+
+    function initializeSavingsData() {
+        const user = getUser();
+        
+        // Vault stats defaults from localStorage
+        let flexSaved = parseFloat(localStorage.getItem('novapay_flex_savings') || '150000');
+        let lockedSaved = parseFloat(localStorage.getItem('novapay_locked_savings') || '300000');
+        let portfolioVal = parseFloat(localStorage.getItem('novapay_portfolio_val') || '1200000');
+        
+        const flexTarget = 500000;
+        const lockedTarget = 1000000;
+
+        localStorage.setItem('novapay_flex_savings', flexSaved);
+        localStorage.setItem('novapay_locked_savings', lockedSaved);
+        localStorage.setItem('novapay_portfolio_val', portfolioVal);
+
+        const totalSaved = flexSaved + lockedSaved;
+        document.getElementById('display-total-saved').textContent = formatCurrency(totalSaved);
+        document.getElementById('display-flex-saved').textContent = formatCurrency(flexSaved);
+        document.getElementById('display-locked-saved').textContent = formatCurrency(lockedSaved);
+        document.getElementById('display-portfolio').textContent = formatCurrency(portfolioVal);
+
+        // Progress bars update
+        const flexPct = Math.min(100, Math.round((flexSaved / flexTarget) * 100));
+        document.getElementById('flex-progress-percent').textContent = `${flexPct}%`;
+        document.getElementById('flex-progress-bar').style.width = `${flexPct}%`;
+        document.getElementById('flex-current-label').textContent = formatCurrency(flexSaved);
+        document.getElementById('flex-target-label').textContent = `Goal: ${formatCurrency(flexTarget)}`;
+
+        const lockedPct = Math.min(100, Math.round((lockedSaved / lockedTarget) * 100));
+        document.getElementById('locked-progress-percent').textContent = `${lockedPct}%`;
+        document.getElementById('locked-progress-bar').style.width = `${lockedPct}%`;
+        document.getElementById('locked-current-label').textContent = formatCurrency(lockedSaved);
+        document.getElementById('locked-target-label').textContent = `Goal: ${formatCurrency(lockedTarget)}`;
+    }
+
+    function openFundModal(vaultType) {
+        currentVaultType = vaultType;
+        document.getElementById('fund-pin').value = '';
+        document.getElementById('fund-amount').value = '';
+
+        if (vaultType === 'flex') {
+            document.getElementById('fund-title').textContent = 'Fund Flex Savings';
+            document.getElementById('fund-desc').textContent = 'Flexible savings earning 10% p.a. withdrawable daily';
+        } else {
+            document.getElementById('fund-title').textContent = 'Fund Locked Vault';
+            document.getElementById('fund-desc').textContent = 'Locked savings earning 15% p.a. till Dec 31, 2026';
+        }
+
+        document.getElementById('fund-modal').style.display = 'flex';
+        document.getElementById('fund-amount').focus();
+    }
+
+    function closeFundModal() {
+        document.getElementById('fund-modal').style.display = 'none';
+    }
+
+    function toggleEmergencyLock(toggle) {
+        if (toggle.checked) {
+            showToast('Nova Shield Emergency Lock active! Savings locked.', 'warning');
+        } else {
+            showToast('Emergency Lock disabled.', 'info');
+        }
+    }
+
+    async function executeFunding(event) {
+        event.preventDefault();
+        const amount = parseFloat(document.getElementById('fund-amount').value);
+        const pin = document.getElementById('fund-pin').value;
+        const user = getUser();
+
+        if (pin.length !== 4) {
+            showToast('PIN must be 4 digits', 'warning');
+            return;
+        }
+
+        if (amount > user.balance) {
+            showToast('Insufficient wallet balance to fund vault', 'error');
+            return;
+        }
+
+        const submitBtn = document.getElementById('fund-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-feather="loader" class="spin" style="width: 14px; height: 14px;"></i> Locking...';
+        feather.replace();
+
+        const vaultName = currentVaultType === 'flex' ? 'Flex Savings Vault' : 'Locked Vault';
+        const res = await addTransaction(
+            amount,
+            `Funded ${vaultName}`,
+            `Transferred to ${vaultName} at interest rate`,
+            vaultName,
+            currentVaultType === 'flex' ? 'FLX-VAULT-001' : 'LCK-VAULT-002',
+            pin,
+            'save'
+        );
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Add to Vault';
+        feather.replace();
+
+        if (res && res.success) {
+            closeFundModal();
+            // Update local saved state
+            if (currentVaultType === 'flex') {
+                let flexSaved = parseFloat(localStorage.getItem('novapay_flex_savings') || '0');
+                localStorage.setItem('novapay_flex_savings', flexSaved + amount);
+            } else {
+                let lockedSaved = parseFloat(localStorage.getItem('novapay_locked_savings') || '0');
+                localStorage.setItem('novapay_locked_savings', lockedSaved + amount);
+            }
+            showToast('Savings vault funded successfully!', 'success');
+            initializeSavingsData();
+        }
+    }
+
+    // Investment logics
+    function openInvestModal(investType) {
+        currentInvestType = investType;
+        document.getElementById('invest-pin').value = '';
+        document.getElementById('invest-amount').value = '';
+
+        if (investType === 'fd') {
+            document.getElementById('invest-title').textContent = 'Subscribe Fixed Deposit';
+            document.getElementById('invest-desc').textContent = 'Earn up to 18% p.a. guaranteed interest rate';
+            document.getElementById('invest-tenure-group').style.display = 'block';
+        } else {
+            document.getElementById('invest-title').textContent = 'Buy Treasury Bills';
+            document.getElementById('invest-desc').textContent = 'CBN Backed Government Treasury Bills earning 14.5% p.a.';
+            document.getElementById('invest-tenure-group').style.display = 'none';
+        }
+
+        document.getElementById('invest-modal').style.display = 'flex';
+        document.getElementById('invest-amount').focus();
+    }
+
+    function closeInvestModal() {
+        document.getElementById('invest-modal').style.display = 'none';
+    }
+
+    async function executeInvestment(event) {
+        event.preventDefault();
+        const amount = parseFloat(document.getElementById('invest-amount').value);
+        const pin = document.getElementById('invest-pin').value;
+        const user = getUser();
+
+        if (pin.length !== 4) {
+            showToast('PIN must be 4 digits', 'warning');
+            return;
+        }
+
+        if (amount > user.balance) {
+            showToast('Insufficient wallet balance to subscribe', 'error');
+            return;
+        }
+
+        const submitBtn = document.getElementById('invest-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-feather="loader" class="spin" style="width: 14px; height: 14px;"></i> Investing...';
+        feather.replace();
+
+        const investName = currentInvestType === 'fd' ? 'NovaPay Fixed Deposit' : 'FGN Treasury Bills';
+        const res = await addTransaction(
+            amount,
+            `Purchased ${investName}`,
+            `Subscribed yield assets category`,
+            investName,
+            currentInvestType === 'fd' ? 'FD-ASSET-098' : 'TB-ASSET-047',
+            pin,
+            'save'
+        );
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Subscribe Portfolio';
+        feather.replace();
+
+        if (res && res.success) {
+            closeInvestModal();
+            let portfolioVal = parseFloat(localStorage.getItem('novapay_portfolio_val') || '0');
+            localStorage.setItem('novapay_portfolio_val', portfolioVal + amount);
+            showToast('Investment purchased successfully!', 'success');
+            initializeSavingsData();
+        }
+    }
+
+    // Loans logics
+    function updateLoanCalculation(amount) {
+        amount = parseFloat(amount);
+        document.getElementById('display-loan-amount').textContent = formatCurrency(amount);
+
+        const tenureMonths = parseInt(document.getElementById('loan-tenure').value);
+        const annualRate = 0.08;
+        const totalInterest = amount * (annualRate * (tenureMonths / 12));
+        
+        document.getElementById('loan-interest-val').textContent = formatCurrency(totalInterest);
+        
+        const monthlyRepay = (amount + totalInterest) / tenureMonths;
+        document.getElementById('loan-monthly-repay').textContent = formatCurrency(monthlyRepay);
+    }
+
+    function toggleCheck(item) {
+        if (item === 'credit') {
+            checklistCreditChecked = !checklistCreditChecked;
+            const checkIcon = document.getElementById('chk-credit');
+            if (checklistCreditChecked) {
+                checkIcon.classList.add('checked');
+                checkIcon.innerHTML = '<i data-feather="check" style="width: 10px; height: 10px;"></i>';
+            } else {
+                checkIcon.classList.remove('checked');
+                checkIcon.innerHTML = '';
+            }
+            feather.replace();
+        }
+    }
+
+    async function handleLoanApplication() {
+        if (!checklistCreditChecked) {
+            showToast('Please check all eligibility requirements first', 'warning');
+            return;
+        }
+
+        const loanAmount = parseFloat(document.getElementById('loan-range').value);
+        const user = getUser();
+
+        const applyBtn = document.getElementById('apply-loan-btn');
+        applyBtn.disabled = true;
+        applyBtn.innerHTML = '<i data-feather="loader" class="spin" style="width: 14px; height: 14px; vertical-align: middle;"></i> Processing Loan...';
+        feather.replace();
+
+        try {
+            const response = await fetch('/api/deposit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: user.id, amount: loanAmount })
+            });
+            const result = await response.json();
+            
+            applyBtn.disabled = false;
+            applyBtn.innerHTML = 'Request Instant Credit';
+            feather.replace();
+
+            if (result.success) {
+                user.balance = result.balance;
+                localStorage.setItem('paylink_user', JSON.stringify(user));
+                
+                showToast(`Loan of ${formatCurrency(loanAmount)} credited successfully!`, 'success');
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 1200);
+            } else {
+                showToast(result.message || 'Loan approval failed', 'error');
+            }
+        } catch (e) {
+            applyBtn.disabled = false;
+            applyBtn.innerHTML = 'Request Instant Credit';
+            feather.replace();
+            showToast('Failed to connect to lending server', 'error');
+        }
+    }
+</script>
+{% endblock %}
+
+{% block bottom_nav %}
+<div class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-item">
+        <i data-feather="home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('cards') }}" class="nav-item">
+        <i data-feather="credit-card"></i>
+        <span>Cards</span>
+    </a>
+    <a href="{{ url_for('transfer') }}" class="nav-item">
+        <i data-feather="send"></i>
+        <span>Pay</span>
+    </a>
+    <a href="/save" class="nav-item active">
+        <i data-feather="lock"></i>
+        <span>Save</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="nav-item">
+        <i data-feather="user"></i>
+        <span>Profile</span>
+    </a>
+</div>
+{% endblock %}
