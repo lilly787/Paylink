@@ -1,120 +1,218 @@
 {% extends 'base.html' %}
-
-{% block title %}Register{% endblock %}
+{% block title %}Create Account{% endblock %}
 
 {% block extra_css %}
 <style>
     .auth-container {
-        padding: var(--space-xl) var(--space-md);
+        padding: var(--space-xl) var(--space-md) var(--space-xl);
         min-height: 100vh;
         display: flex;
         flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+    .auth-container::before {
+        content: '';
+        position: absolute;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(61,107,255,0.11) 0%, transparent 70%);
+        top: -80px; right: -100px;
+        pointer-events: none; border-radius: 50%;
     }
     .back-btn {
-        display: inline-flex;
-        align-items: center;
-        color: var(--text-main);
-        text-decoration: none;
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        color: var(--text-muted); text-decoration: none;
         margin-bottom: var(--space-lg);
-        font-weight: 500;
+        font-weight: 500; font-size: 0.875rem;
+        font-family: 'Outfit', sans-serif;
+        transition: color 0.2s; position: relative; z-index: 1;
     }
-    .back-btn i {
-        margin-right: 0.5rem;
-    }
+    .back-btn:hover { color: var(--brand-accent); }
     .auth-header {
         margin-bottom: var(--space-xl);
+        position: relative; z-index: 1;
     }
-    .auth-form {
-        flex: 1;
+    .auth-header h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2rem; font-weight: 800;
+        letter-spacing: -0.03em; margin-bottom: 0.4rem;
+        background: linear-gradient(135deg, var(--text) 40%, var(--brand-accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .auth-header p { color: var(--text-muted); font-size: 0.9rem; }
+    .auth-form { flex: 1; position: relative; z-index: 1; }
+
+    /* Account type pills */
+    .account-type-group { margin-bottom: var(--space-md); }
+    .account-type-label {
+        display: block; font-size: 0.8rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.07em;
+        color: var(--text-muted); margin-bottom: 0.6rem;
+        font-family: 'Inter', sans-serif;
+    }
+    .account-type-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .account-pill {
+        cursor: pointer;
+        background: rgba(13,20,33,0.6);
+        border: 1px solid rgba(61,107,255,0.18);
+        border-radius: 14px;
+        padding: 0.85rem 0.8rem;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    .account-pill:hover { border-color: rgba(61,107,255,0.35); }
+    .account-pill.selected {
+        border-color: var(--brand);
+        background: rgba(61,107,255,0.1);
+        box-shadow: 0 0 0 3px rgba(61,107,255,0.12);
+    }
+    .account-pill .pill-type {
+        font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 700;
+        color: var(--text); margin-bottom: 2px;
+    }
+    .account-pill .pill-sub { font-size: 0.68rem; color: var(--text-muted); line-height: 1.3; }
+    .account-pill input[type="radio"] { display: none; }
+
+    /* Input with icon */
+    .input-icon-wrap { position: relative; }
+    .input-icon-wrap .input-field { padding-left: 2.75rem; }
+    .input-icon-wrap .field-icon {
+        position: absolute; left: 0.9rem; top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted); width: 16px; height: 16px;
+        pointer-events: none;
+    }
+    select.input-field {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7A99' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 2.5rem;
     }
     .auth-footer {
-        text-align: center;
-        margin-top: var(--space-xl);
-        font-size: 0.875rem;
-        color: var(--text-muted);
+        text-align: center; margin-top: var(--space-lg);
+        font-size: 0.875rem; color: var(--text-muted);
+        position: relative; z-index: 1;
+        font-family: 'Outfit', sans-serif;
     }
-    .auth-footer a {
-        color: var(--primary);
-        font-weight: 600;
-        text-decoration: none;
-    }
+    .auth-footer a { color: var(--brand-accent); font-weight: 700; text-decoration: none; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="auth-container animate-fade-in-up">
     <a href="{{ url_for('onboarding') }}" class="back-btn">
-        <i data-feather="arrow-left"></i> Back
+        <i data-feather="arrow-left" style="width:16px;height:16px;"></i> Back
     </a>
-
     <div class="auth-header">
-        <h1 class="text-3xl font-bold mb-xs">Create Account</h1>
-        <p class="text-muted">Join Paylink and take control of your finances</p>
+        <h1>Create Account</h1>
+        <p>Join Paylink and take full control of your finances</p>
     </div>
 
     <form class="auth-form" id="register-form" onsubmit="handleRegister(event)">
         <div class="input-group">
             <label class="input-label" for="fullname">Full Name</label>
-            <input type="text" id="fullname" class="input-field" placeholder="e.g. John Doe" required>
+            <div class="input-icon-wrap">
+                <i data-feather="user" class="field-icon"></i>
+                <input type="text" id="fullname" class="input-field" placeholder="e.g. John Doe" autocomplete="name" required>
+            </div>
         </div>
-
         <div class="input-group">
             <label class="input-label" for="email">Email Address</label>
-            <input type="email" id="email" class="input-field" placeholder="name@example.com" required>
+            <div class="input-icon-wrap">
+                <i data-feather="mail" class="field-icon"></i>
+                <input type="email" id="email" class="input-field" placeholder="name@example.com" autocomplete="email" required>
+            </div>
         </div>
-
         <div class="input-group">
             <label class="input-label" for="phone">Phone Number</label>
-            <input type="tel" id="phone" class="input-field" placeholder="+1 (555) 000-0000" required>
+            <div class="input-icon-wrap">
+                <i data-feather="phone" class="field-icon"></i>
+                <input type="tel" id="phone" class="input-field" placeholder="+234 800 000 0000" autocomplete="tel" required>
+            </div>
         </div>
 
-        <div class="input-group">
-            <label class="input-label" for="account_type">Account Type</label>
-            <select id="account_type" class="input-field" style="background: var(--surface-card); color: var(--text-white); border: 0.5px solid var(--border-divider); border-radius: var(--radius-md); padding: var(--space-xs) var(--space-sm); width: 100%; cursor: pointer;" required>
-                <option value="savings">Savings Account (15% p.a., min ₦5,000)</option>
-                <option value="current">Current Account (1% p.a., ₦100,000 Overdraft)</option>
-            </select>
+        <!-- Account type pills -->
+        <div class="account-type-group">
+            <span class="account-type-label">Account Type</span>
+            <div class="account-type-pills">
+                <label class="account-pill selected" id="pill-savings">
+                    <input type="radio" name="account_type" id="account_type" value="savings" checked onchange="selectPill('savings')">
+                    <div class="pill-type">💰 Savings</div>
+                    <div class="pill-sub">15% p.a. interest<br>Min ₦5,000</div>
+                </label>
+                <label class="account-pill" id="pill-current">
+                    <input type="radio" name="account_type" value="current" onchange="selectPill('current')">
+                    <div class="pill-type">🏢 Current</div>
+                    <div class="pill-sub">1% p.a. interest<br>₦100k Overdraft</div>
+                </label>
+            </div>
         </div>
 
         <div class="input-group">
             <label class="input-label" for="password">Password</label>
-            <input type="password" id="password" class="input-field" placeholder="Create a strong password" required>
+            <div class="input-icon-wrap">
+                <i data-feather="lock" class="field-icon"></i>
+                <input type="password" id="password" class="input-field" placeholder="Create a strong password" autocomplete="new-password" required>
+            </div>
         </div>
-
         <div class="input-group">
             <label class="input-label" for="confirm_password">Confirm Password</label>
-            <input type="password" id="confirm_password" class="input-field" placeholder="Confirm your password" required>
+            <div class="input-icon-wrap">
+                <i data-feather="lock" class="field-icon"></i>
+                <input type="password" id="confirm_password" class="input-field" placeholder="Repeat your password" autocomplete="new-password" required>
+            </div>
         </div>
 
-        <button type="submit" class="btn btn-primary mt-sm">Register</button>
+        <button type="submit" class="btn btn-primary" id="register-btn" style="margin-top:0.5rem;">
+            <i data-feather="user-plus" style="width:17px;height:17px;margin-right:8px;"></i>
+            Create My Account
+        </button>
     </form>
 
     <div class="auth-footer">
-        Already have an account? <a href="{{ url_for('login') }}">Log In</a>
+        Already have an account? <a href="{{ url_for('login') }}">Sign In</a>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    function selectPill(type) {
+        document.getElementById('pill-savings').classList.toggle('selected', type === 'savings');
+        document.getElementById('pill-current').classList.toggle('selected', type === 'current');
+        document.getElementById('account_type').value = type;
+    }
+
     async function handleRegister(event) {
         event.preventDefault();
-        const fullname = document.getElementById('fullname').value;
-        const email = document.getElementById('email').value;
-        const phone = document.getElementById('phone').value;
-        const password = document.getElementById('password').value;
-        const confirm_password = document.getElementById('confirm_password').value;
-        const account_type = document.getElementById('account_type').value;
-        
-        if (password !== confirm_password) {
+        const btn = document.getElementById('register-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>';
+
+        const fullname  = document.getElementById('fullname').value;
+        const email     = document.getElementById('email').value;
+        const phone     = document.getElementById('phone').value;
+        const password  = document.getElementById('password').value;
+        const confirm   = document.getElementById('confirm_password').value;
+        const acct_type = document.querySelector('input[name="account_type"]:checked').value;
+
+        if (password !== confirm) {
             showToast('Passwords do not match!', 'error');
-            return;
+            btn.disabled = false;
+            btn.innerHTML = '<i data-feather="user-plus" style="width:17px;height:17px;margin-right:8px;"></i> Create My Account';
+            feather.replace(); return;
         }
-        
-        // Registers user. Their OTP entry in the next screen will act as defining their custom Transaction PIN!
-        const success = await registerUser(fullname, email, phone, password, '1234', account_type);
+        const success = await registerUser(fullname, email, phone, password, '1234', acct_type);
         if (success) {
             window.location.href = "{{ url_for('otp') }}";
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-feather="user-plus" style="width:17px;height:17px;margin-right:8px;"></i> Create My Account';
+            feather.replace();
         }
     }
 </script>

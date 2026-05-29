@@ -3,39 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Paylink – Nigeria's most secure and modern digital banking platform.">
     <title>Paylink | {% block title %}{% endblock %}</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Feather Icons (Lightweight, beautiful icons) -->
+    <!-- Google Fonts: Outfit + Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     {% block extra_css %}{% endblock %}
     <script>
-        // Apply theme immediately to prevent flashing
         (function() {
-            const savedTheme = localStorage.getItem('paylink_theme');
-            if (savedTheme === 'light') {
-                document.documentElement.setAttribute('data-theme', 'light');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-            }
+            const t = localStorage.getItem('paylink_theme');
+            if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+            else document.documentElement.removeAttribute('data-theme');
         })();
     </script>
 </head>
 <body>
     <div class="app-container">
         {% block content %}{% endblock %}
-        
         {% block bottom_nav %}{% endblock %}
     </div>
-
-    <!-- Custom JS -->
     <script src="{{ url_for('static', filename='main.js') }}"></script>
-    <script>
-        // Initialize Feather Icons
-        feather.replace();
-    </script>
+    <script>feather.replace();</script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

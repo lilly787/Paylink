@@ -1,152 +1,222 @@
 {% extends 'base.html' %}
-
 {% block title %}Dashboard{% endblock %}
 
 {% block extra_css %}
 <style>
     .dashboard-container {
-        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2);
+        padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 2.5);
         min-height: 100vh;
     }
-    .header {
+
+    /* ── Header ── */
+    .dash-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: var(--space-lg);
     }
-    .user-greeting {
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
-    }
+    .user-greeting { display: flex; align-items: center; gap: 0.75rem; }
     .avatar-sm {
-        width: 42px;
-        height: 42px;
-        border-radius: var(--radius-full);
-        background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'DM Sans', sans-serif;
+        width: 44px; height: 44px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--brand), var(--brand-2));
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Outfit', sans-serif;
         font-weight: 700;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 14px rgba(61,107,255,0.35);
+        flex-shrink: 0;
     }
-    .notification-btn {
+    .greeting-text { line-height: 1.3; }
+    .greeting-hi { font-size: 0.72rem; color: var(--text-muted); font-family: 'Outfit', sans-serif; }
+    .greeting-name { font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); }
+
+    .notif-btn {
         position: relative;
-        background: var(--surface-card);
-        border: 0.5px solid var(--border-divider);
-        border-radius: var(--radius-full);
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-white);
-        box-shadow: var(--shadow-sm);
+        width: 42px; height: 42px;
+        background: rgba(17,26,44,0.7);
+        border: 1px solid rgba(61,107,255,0.18);
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--text);
+        text-decoration: none;
+        transition: background 0.2s, border-color 0.2s;
+        backdrop-filter: blur(10px);
     }
-    .notification-badge {
+    .notif-btn:hover { background: rgba(61,107,255,0.12); border-color: rgba(61,107,255,0.35); }
+    .notif-dot {
         position: absolute;
-        top: 8px;
-        right: 10px;
-        width: 8px;
-        height: 8px;
-        background: var(--error-debit);
-        border-radius: var(--radius-full);
+        top: 9px; right: 10px;
+        width: 7px; height: 7px;
+        background: var(--error);
+        border-radius: 50%;
+        border: 1.5px solid var(--bg);
     }
-    
-    /* Balance Card */
+
+    /* ── Balance Card ── */
     .balance-card {
-        background: var(--surface-card);
-        border: 0.5px solid var(--border-divider);
-        border-radius: var(--radius-lg);
-        padding: var(--space-lg);
-        color: var(--text-white);
-        margin-bottom: var(--space-lg);
-        box-shadow: var(--shadow-md);
         position: relative;
+        border-radius: 24px;
+        padding: 1.6rem 1.5rem 1.4rem;
+        margin-bottom: var(--space-md);
         overflow: hidden;
+        background: linear-gradient(135deg, #1A2545 0%, #0F1830 50%, #151D35 100%);
+        border: 1px solid rgba(61,107,255,0.22);
+        box-shadow: 0 12px 40px rgba(9,14,23,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
     }
+    /* Animated gradient mesh */
     .balance-card::before {
         content: '';
         position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 200px;
-        height: 200px;
-        background: rgba(59, 130, 246, 0.04);
-        border-radius: var(--radius-full);
+        inset: 0;
+        background:
+            radial-gradient(ellipse 120% 80% at 110% -30%, rgba(61,107,255,0.22) 0%, transparent 55%),
+            radial-gradient(ellipse 80% 80% at -20% 110%, rgba(124,61,255,0.15) 0%, transparent 55%);
+        pointer-events: none;
     }
+    /* Decorative circles */
+    .balance-card::after {
+        content: '';
+        position: absolute;
+        width: 220px; height: 220px;
+        background: rgba(61,107,255,0.06);
+        border-radius: 50%;
+        top: -60px; right: -60px;
+        pointer-events: none;
+    }
+    .bc-inner { position: relative; z-index: 1; }
     .balance-label-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        margin-bottom: 0.25rem;
-    }
-    .balance-amount {
-        font-family: 'Syne', sans-serif;
-        font-size: 2.25rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        margin-bottom: var(--space-sm);
-        letter-spacing: -0.01em;
-        color: var(--brand-accent);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 0.5rem;
+        font-family: 'Outfit', sans-serif;
     }
-    .account-number {
+    #balance-toggle {
+        cursor: pointer;
+        color: rgba(255,255,255,0.5);
+        transition: color 0.2s;
+        display: flex; align-items: center;
+    }
+    #balance-toggle:hover { color: var(--brand-accent); }
+    .balance-amount {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.03em;
+        margin-bottom: 1rem;
+        line-height: 1;
+    }
+    .balance-footer {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.825rem;
-        color: var(--text-muted);
-        background: rgba(13, 31, 45, 0.4);
-        padding: 0.4rem 0.75rem;
-        border-radius: var(--radius-sm);
+        justify-content: space-between;
+    }
+    .account-number-pill {
         display: inline-flex;
-        border: 0.5px solid var(--border-divider);
+        align-items: center;
+        gap: 0.4rem;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.55);
+        background: rgba(255,255,255,0.06);
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--radius-full);
+        border: 1px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+    .account-number-pill:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .balance-card-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        font-family: 'Outfit', sans-serif;
+        letter-spacing: 0.06em;
+        color: var(--success);
+        background: rgba(16,217,140,0.12);
+        border: 1px solid rgba(16,217,140,0.25);
+        padding: 0.25rem 0.6rem;
+        border-radius: var(--radius-full);
     }
 
-    /* Sub-ledger columns */
+    /* ── Sub-ledger Grid ── */
     .sub-ledger-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: var(--space-sm);
-        margin-bottom: var(--space-lg);
+        gap: 0.75rem;
+        margin-bottom: var(--space-md);
     }
     .sub-ledger-card {
-        background: var(--surface-card);
-        border: 0.5px solid var(--border-divider);
-        padding: 12px 14px;
-        border-radius: var(--radius-md);
-        text-align: left;
+        background: rgba(17,26,44,0.7);
+        border: 1px solid rgba(61,107,255,0.14);
+        border-radius: 16px;
+        padding: 0.9rem 1rem;
+        backdrop-filter: blur(12px);
+        transition: border-color 0.2s;
     }
-    .sub-ledger-card p {
-        font-size: 0.7rem;
+    .sub-ledger-card:hover { border-color: rgba(61,107,255,0.3); }
+    .sub-ledger-card .slc-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         color: var(--text-muted);
-        margin-bottom: 2px;
-        display: flex;
-        align-items: center;
-        gap: 4px;
+        font-family: 'Outfit', sans-serif;
+        margin-bottom: 0.4rem;
+        display: flex; align-items: center; gap: 4px;
     }
-    .sub-ledger-card h4 {
-        font-family: 'Syne', sans-serif;
-        font-weight: 600;
-        font-size: 0.95rem;
+    .sub-ledger-card .slc-value {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text);
     }
 
-    /* Quick Actions */
-    .section-title {
-        font-family: 'DM Sans', sans-serif;
-        font-size: 1rem;
-        font-weight: 500;
+    /* ── Oracle Feed ── */
+    .oracle-feed-card {
+        background: rgba(17,26,44,0.6);
+        border: 1px solid rgba(61,107,255,0.14);
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
         margin-bottom: var(--space-md);
-        text-align: left;
-        color: var(--text-white);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(12px);
+        gap: 0.75rem;
     }
+    .oracle-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 8px var(--success);
+        flex-shrink: 0;
+        animation: orb-pulse 2s ease-in-out infinite;
+    }
+    .oracle-rate-val {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.02em;
+    }
+
+    /* ── Quick Actions ── */
     .quick-actions {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: var(--space-sm);
-        margin-bottom: var(--space-lg);
+        gap: 0.65rem;
+        margin-bottom: var(--space-md);
     }
     .action-btn {
         display: flex;
@@ -154,231 +224,258 @@
         align-items: center;
         gap: 0.5rem;
         text-decoration: none;
-        color: var(--text-white);
         cursor: pointer;
     }
     .action-icon {
-        width: 52px;
-        height: 52px;
-        background: var(--surface-card);
-        border: 0.5px solid var(--border-divider);
-        border-radius: var(--radius-md);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 54px; height: 54px;
+        background: rgba(17,26,44,0.75);
+        border: 1px solid rgba(61,107,255,0.18);
+        border-radius: 18px;
+        display: flex; align-items: center; justify-content: center;
         color: var(--brand-accent);
-        box-shadow: var(--shadow-sm);
-        transition: transform 0.2s ease;
+        transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+                    background 0.2s ease, border-color 0.2s ease,
+                    box-shadow 0.2s ease;
+        backdrop-filter: blur(8px);
     }
     .action-btn:hover .action-icon {
-        transform: translateY(-2px);
-        border-color: var(--brand-primary);
+        transform: translateY(-4px) scale(1.04);
+        background: rgba(61,107,255,0.12);
+        border-color: rgba(61,107,255,0.4);
+        box-shadow: 0 8px 20px rgba(61,107,255,0.2);
     }
     .action-label {
-        font-size: 0.725rem;
-        font-weight: 500;
-        text-align: center;
+        font-size: 0.68rem;
+        font-weight: 700;
+        font-family: 'Outfit', sans-serif;
+        letter-spacing: 0.04em;
         color: var(--text-muted);
+        text-align: center;
     }
 
-    /* Transactions */
-    .transaction-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-sm);
+    /* ── Budget Bar ── */
+    .budget-card {
+        background: rgba(17,26,44,0.65);
+        border: 1px solid rgba(61,107,255,0.12);
+        border-radius: 16px;
+        padding: 1rem 1.1rem;
+        margin-bottom: var(--space-md);
     }
+    .budget-card .bc-top {
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;
+    }
+    .budget-card .bc-label {
+        font-size: 0.7rem; font-weight: 700; font-family: 'Outfit', sans-serif;
+        text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);
+    }
+    .budget-card .bc-val {
+        font-size: 0.7rem; font-weight: 700; font-family: 'Outfit', sans-serif; color: var(--text);
+    }
+    .bar-track {
+        height: 5px; background: rgba(61,107,255,0.1); border-radius: 99px; overflow: hidden;
+    }
+    .bar-fill {
+        height: 100%; border-radius: 99px;
+        background: linear-gradient(90deg, var(--brand), var(--brand-2));
+        transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── Promo Banner ── */
+    .promo-banner {
+        background: linear-gradient(135deg, rgba(61,107,255,0.14) 0%, rgba(124,61,255,0.1) 100%);
+        border: 1px solid rgba(61,107,255,0.22);
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
+        margin-bottom: var(--space-md);
+        display: flex; align-items: center; gap: 1rem;
+        text-decoration: none;
+        transition: border-color 0.2s, transform 0.2s;
+    }
+    .promo-banner:hover { border-color: rgba(61,107,255,0.4); transform: translateY(-1px); }
+    .promo-icon {
+        width: 40px; height: 40px; border-radius: 12px;
+        background: linear-gradient(135deg, var(--brand), var(--brand-2));
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 14px rgba(61,107,255,0.3);
+    }
+    .promo-title { font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .promo-sub { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; }
+    .promo-sub b { color: var(--success); }
+
+    /* ── Transactions ── */
+    .section-header {
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.9rem;
+    }
+    .section-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.75rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        color: var(--text-muted); margin: 0;
+    }
+    .see-all-link {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.75rem; font-weight: 700;
+        color: var(--brand-accent); text-decoration: none;
+        transition: opacity 0.2s;
+    }
+    .see-all-link:hover { opacity: 0.7; }
+    .transaction-list { display: flex; flex-direction: column; gap: 0.5rem; }
     .transaction-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--surface-card);
-        padding: var(--space-sm) var(--space-md);
-        border-radius: var(--radius-md);
-        border: 0.5px solid var(--border-divider);
-        transition: transform 0.2s ease;
+        display: flex; align-items: center; justify-content: space-between;
+        background: rgba(17,26,44,0.65);
+        padding: 0.85rem 1rem;
+        border-radius: 16px;
+        border: 1px solid rgba(61,107,255,0.1);
+        text-decoration: none; color: inherit;
+        transition: background 0.2s, border-color 0.2s, transform 0.2s;
+        animation: fadeInUp 0.4s ease both;
     }
-    .transaction-item:hover {
-        transform: translateY(-1px);
-    }
-    .txn-left {
-        display: flex;
-        align-items: center;
-        gap: var(--space-md);
-    }
+    .transaction-item:hover { background: rgba(17,26,44,0.85); border-color: rgba(61,107,255,0.25); transform: translateX(2px); }
+    .txn-left { display: flex; align-items: center; gap: 0.75rem; }
     .txn-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: var(--radius-full);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(59, 130, 246, 0.08);
-        color: var(--brand-accent);
+        width: 38px; height: 38px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
     }
-    .txn-details h4 {
-        font-family: 'DM Sans', sans-serif;
-        font-size: 0.85rem;
-        font-weight: 500;
-        margin-bottom: 0.125rem;
-    }
-    .txn-details p {
-        font-size: 0.725rem;
-        color: var(--text-muted);
-    }
-    .txn-amount {
-        font-family: 'Syne', sans-serif;
-        font-weight: 600;
-        font-size: 0.875rem;
-    }
-    .txn-amount.debit {
-        color: var(--error-debit);
-    }
-    .txn-amount.credit {
-        color: var(--success-credit);
-    }
-    .empty-state {
-        text-align: center;
-        padding: var(--space-xl) var(--space-md);
-        background: var(--surface-card);
-        border-radius: var(--radius-md);
-        border: 1px dashed var(--border-divider);
-        color: var(--text-muted);
-    }
-
-    /* Progress bar */
-    .category-bar-bg {
-        width: 100%;
-        height: 6px;
-        background: var(--border-divider);
-        border-radius: var(--radius-full);
-        overflow: hidden;
-    }
-    .category-bar-fill {
-        height: 100%;
-        border-radius: var(--radius-full);
-        transition: width 0.6s ease;
-    }
+    .txn-icon.income { background: rgba(16,217,140,0.12); color: var(--success); }
+    .txn-icon.expense { background: rgba(255,76,106,0.12); color: var(--error); }
+    .txn-details h4 { font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+    .txn-details p { font-size: 0.72rem; color: var(--text-muted); }
+    .txn-amount { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.875rem; }
+    .txn-amount.credit { color: var(--success); }
+    .txn-amount.debit  { color: var(--error); }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-container animate-fade-in-up">
+
     <!-- Header -->
-    <header class="header">
+    <header class="dash-header">
         <div class="user-greeting">
             <div class="avatar-sm" id="user-avatar">JD</div>
-            <div>
-                <p class="text-xs text-muted" style="text-align: left;">Good Morning,</p>
-                <h2 class="font-bold text-sm" id="user-name" style="margin: 0; font-family: 'DM Sans', sans-serif; font-weight: 500;">Loading...</h2>
+            <div class="greeting-text">
+                <p class="greeting-hi" id="greeting-time">Good Morning,</p>
+                <h2 class="greeting-name" id="user-name">Loading...</h2>
             </div>
         </div>
-        <a href="{{ url_for('notifications') }}" class="notification-btn">
-            <i data-feather="bell" style="width: 18px; height: 18px;"></i>
-            <span class="notification-badge"></span>
+        <a href="{{ url_for('notifications') }}" class="notif-btn">
+            <i data-feather="bell" style="width:18px;height:18px;"></i>
+            <span class="notif-dot"></span>
         </a>
     </header>
 
     <!-- Balance Card -->
     <div class="balance-card">
-        <div class="balance-label-row">
-            <span>TOTAL BALANCE (NGN)</span>
-            <span id="balance-toggle" onclick="toggleBalanceVisibility()" style="cursor: pointer; color: var(--brand-accent);">
-                <i id="icon-eye" data-feather="eye" style="width: 16px; height: 16px;"></i>
-                <i id="icon-eye-off" data-feather="eye-off" style="width: 16px; height: 16px; display: none;"></i>
-            </span>
-        </div>
-        <h1 class="balance-amount" id="display-balance">₦0.00</h1>
-        <div class="account-number" onclick="copyAccountToClipboard()">
-            <span id="display-account-number">30••••••••</span>
-            <i data-feather="copy" style="width: 13px; height: 13px; cursor: pointer;"></i>
+        <div class="bc-inner">
+            <div class="balance-label-row">
+                <span>Total Balance (NGN)</span>
+                <span id="balance-toggle" onclick="toggleBalanceVisibility()">
+                    <i id="icon-eye"     data-feather="eye"     style="width:15px;height:15px;"></i>
+                    <i id="icon-eye-off" data-feather="eye-off" style="width:15px;height:15px;display:none;"></i>
+                </span>
+            </div>
+            <h1 class="balance-amount" id="display-balance">₦0.00</h1>
+            <div class="balance-footer">
+                <div class="account-number-pill" onclick="copyAccountToClipboard()">
+                    <span id="display-account-number">30•••••••</span>
+                    <i data-feather="copy" style="width:11px;height:11px;"></i>
+                </div>
+                <div class="balance-card-badge">
+                    <i data-feather="shield" style="width:9px;height:9px;"></i>
+                    Secured
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Sub-ledger Balances -->
+    <!-- Sub-ledger -->
     <div class="sub-ledger-grid">
         <div class="sub-ledger-card">
-            <p><i data-feather="lock" style="width: 11px; height: 11px; color: var(--gold-cta);"></i> Smart Vault (15%)</p>
-            <h4 style="color: var(--gold-cta);">₦45,000.00</h4>
+            <div class="slc-label">
+                <i data-feather="lock" style="width:10px;height:10px;color:var(--brand-accent);"></i> Smart Vault
+            </div>
+            <div class="slc-value" style="color:var(--brand-accent);">₦45,000</div>
         </div>
         <div class="sub-ledger-card">
-            <p><i data-feather="globe" style="width: 11px; height: 11px; color: var(--brand-accent);"></i> Dollar Wallet</p>
-            <h4 style="color: var(--brand-accent);">$120.00</h4>
+            <div class="slc-label">
+                <i data-feather="globe" style="width:10px;height:10px;color:var(--success);"></i> Dollar Wallet
+            </div>
+            <div class="slc-value" style="color:var(--success);">$120.00</div>
         </div>
     </div>
 
-    <!-- Oracle Feed -->
-    <div class="glass-card mb-lg" style="padding: var(--space-md); background: rgba(255,255,255,0.04);">
-        <div class="flex justify-between align-center mb-xs">
-            <span class="text-xs font-semibold text-muted">Live Oracle Exchange Feed</span>
-            <span class="text-xs font-bold text-main" id="oracle-source">Fetching…</span>
+    <!-- Live Oracle Feed -->
+    <div class="oracle-feed-card">
+        <div class="oracle-dot"></div>
+        <div style="flex:1;">
+            <div style="font-size:0.68rem;font-weight:700;font-family:'Outfit',sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:2px;">USD → NGN Live Rate</div>
+            <div class="oracle-rate-val" id="oracle-rate">₦--</div>
         </div>
-        <div class="flex justify-between align-center">
-            <div>
-                <h4 class="font-bold" id="oracle-rate" style="font-family: 'Syne', sans-serif; font-size: 1.75rem; color: var(--gold-accent); margin: 0;">₦--</h4>
-                <p class="text-xs text-muted" style="margin: 0;">USD → NGN exchange rate</p>
-            </div>
-            <div style="text-align: right;">
-                <p class="text-xs text-muted" id="oracle-update" style="margin: 0;">Updated just now</p>
-                <p class="text-xs" style="margin: 4px 0 0; color: var(--brand-accent);">Oracle connected</p>
-            </div>
+        <div style="text-align:right;">
+            <div style="font-size:0.68rem;font-weight:700;font-family:'Outfit',sans-serif;color:var(--success);" id="oracle-source">Oracle Connected</div>
+            <div style="font-size:0.68rem;color:var(--text-muted);" id="oracle-update">Fetching...</div>
         </div>
     </div>
 
     <!-- Quick Actions -->
-    <h3 class="section-title">Quick Actions</h3>
+    <p class="section-title" style="margin-bottom:0.85rem;">Quick Actions</p>
     <div class="quick-actions">
         <a href="{{ url_for('transfer') }}" class="action-btn">
-            <div class="action-icon"><i data-feather="send" style="width: 20px; height: 20px;"></i></div>
+            <div class="action-icon"><i data-feather="send" style="width:20px;height:20px;"></i></div>
             <span class="action-label">Send</span>
         </a>
         <a href="{{ url_for('deposit') }}" class="action-btn">
-            <div class="action-icon"><i data-feather="download" style="width: 20px; height: 20px;"></i></div>
+            <div class="action-icon"><i data-feather="download" style="width:20px;height:20px;"></i></div>
             <span class="action-label">Receive</span>
         </a>
         <a href="{{ url_for('bills', tab='electricity') }}" class="action-btn">
-            <div class="action-icon"><i data-feather="zap" style="width: 20px; height: 20px;"></i></div>
+            <div class="action-icon"><i data-feather="zap" style="width:20px;height:20px;"></i></div>
             <span class="action-label">Pay Bills</span>
         </a>
         <a href="{{ url_for('bills', tab='airtime') }}" class="action-btn">
-            <div class="action-icon"><i data-feather="phone" style="width: 20px; height: 20px;"></i></div>
+            <div class="action-icon"><i data-feather="phone" style="width:20px;height:20px;"></i></div>
             <span class="action-label">Airtime</span>
         </a>
     </div>
 
-    <!-- Monthly Budget Spent Tracker -->
-    <div class="glass-card mb-lg" style="padding: var(--space-sm) var(--space-md); text-align: left;">
-        <div class="flex justify-between align-center mb-xs">
-            <span class="text-xs font-semibold text-muted">Monthly Spending Limit</span>
-            <span class="text-xs font-bold text-main" id="budget-ratio" style="font-size: 11px;">₦34,500.00 / ₦80,000.00</span>
+    <!-- Budget Bar -->
+    <div class="budget-card">
+        <div class="bc-top">
+            <span class="bc-label">Monthly Spending</span>
+            <span class="bc-val" id="budget-ratio">₦34,500 / ₦80,000</span>
         </div>
-        <div class="category-bar-bg">
-            <div class="category-bar-fill" style="width: 43%; background: var(--brand-primary);"></div>
+        <div class="bar-track">
+            <div class="bar-fill" style="width:43%;"></div>
         </div>
-        <p class="text-xs text-muted" style="font-size: 0.675rem; margin-top: 6px; display: flex; align-items: center; gap: 4px;"><i data-feather="info" style="width: 12px; height: 12px; color: var(--brand-accent);"></i> Monthly budget caps are active and monitored.</p>
+        <p style="font-size:0.67rem;color:var(--text-muted);margin-top:6px;display:flex;align-items:center;gap:4px;">
+            <i data-feather="info" style="width:11px;height:11px;color:var(--brand-accent);"></i>
+            43% of monthly limit used. Budget monitoring is active.
+        </p>
     </div>
 
-    <!-- Dynamic Premium Marketing Slide -->
-    <a href="/save" style="text-decoration: none;">
-        <div class="glass-card mb-lg" style="background: linear-gradient(135deg, rgba(96, 165, 250, 0.08) 0%, rgba(37, 99, 235, 0.02) 100%); display: flex; align-items: center; gap: var(--space-md); padding: 12px 16px; text-align: left;">
-            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(59, 130, 246, 0.15); color: var(--gold-cta); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <i data-feather="award" style="width: 18px; height: 18px;"></i>
-            </div>
-            <div style="flex: 1;">
-                <h4 class="font-bold text-xs" style="color: var(--gold-cta); margin-bottom: 2px;">Swiss Sapphire Vault</h4>
-                <p class="text-xs text-muted" style="font-size: 0.7rem; line-height: 1.35;">Earn up to <b>15% p.a. interest</b> when you lock your idle savings.</p>
-            </div>
+    <!-- Promo Banner -->
+    <a href="/save" class="promo-banner">
+        <div class="promo-icon">
+            <i data-feather="award" style="width:20px;height:20px;color:#fff;"></i>
         </div>
+        <div>
+            <div class="promo-title">Swiss Sapphire Vault</div>
+            <div class="promo-sub">Earn up to <b>15% p.a. interest</b> when you lock your idle savings.</div>
+        </div>
+        <i data-feather="chevron-right" style="width:16px;height:16px;color:var(--text-muted);margin-left:auto;flex-shrink:0;"></i>
     </a>
 
     <!-- Recent Transactions -->
-    <div class="flex justify-between align-center mb-md">
-        <h3 class="section-title" style="margin-bottom: 0;">Recent Transactions</h3>
-        <a href="{{ url_for('history') }}" class="text-xs font-medium" style="color: var(--brand-accent); text-decoration: none;">See All</a>
+    <div class="section-header">
+        <p class="section-title">Recent Transactions</p>
+        <a href="{{ url_for('history') }}" class="see-all-link">View All</a>
     </div>
-    
-    <div class="transaction-list" id="recent-transactions">
-        <!-- Javascript will populate this -->
+    <div class="transaction-list stagger-children" id="recent-transactions">
+        <!-- Populated by JS -->
     </div>
+
 </div>
 {% endblock %}
 
@@ -388,20 +485,22 @@
     let isBalanceHidden = false;
 
     document.addEventListener('DOMContentLoaded', async () => {
-        // Initialize user
-        const user = await refreshUser(); // Make sure we get fresh data
+        // Dynamic greeting
+        const h = new Date().getHours();
+        const greetEl = document.getElementById('greeting-time');
+        if (greetEl) greetEl.textContent = h < 12 ? 'Good Morning,' : h < 17 ? 'Good Afternoon,' : 'Good Evening,';
+
+        const user = await refreshUser();
         document.getElementById('user-name').textContent = user.fullname;
         document.getElementById('user-avatar').textContent = getInitials(user.fullname);
 
         realBalanceRaw = user.balance;
-        
-        // Setup initial balance view
-        const savedHideState = localStorage.getItem('novapay_balance_hidden') === 'true';
-        isBalanceHidden = savedHideState;
+        isBalanceHidden = localStorage.getItem('novapay_balance_hidden') === 'true';
         updateBalanceDisplay();
 
         const cleanAcc = user.account_number || '3000000000';
-        document.getElementById('display-account-number').textContent = `${cleanAcc.substring(0,2)} ${cleanAcc.substring(2,6)} ${cleanAcc.substring(6)}`;
+        document.getElementById('display-account-number').textContent =
+            `${cleanAcc.substring(0,2)} ${cleanAcc.substring(2,6)} ${cleanAcc.substring(6)}`;
 
         await renderTransactions();
         await renderOracleFeed();
@@ -414,17 +513,16 @@
     }
 
     function updateBalanceDisplay() {
-        const amtEl = document.getElementById('display-balance');
-        const eyeOn = document.getElementById('icon-eye');
-        const eyeOff = document.getElementById('icon-eye-off');
-        
+        const amtEl   = document.getElementById('display-balance');
+        const eyeOn   = document.getElementById('icon-eye');
+        const eyeOff  = document.getElementById('icon-eye-off');
         if (isBalanceHidden) {
             amtEl.textContent = '₦••••••';
-            if (eyeOn) eyeOn.style.display = 'none';
+            if (eyeOn)  eyeOn.style.display  = 'none';
             if (eyeOff) eyeOff.style.display = 'inline-block';
         } else {
             amtEl.textContent = formatCurrency(realBalanceRaw);
-            if (eyeOn) eyeOn.style.display = 'inline-block';
+            if (eyeOn)  eyeOn.style.display  = 'inline-block';
             if (eyeOff) eyeOff.style.display = 'none';
         }
     }
@@ -432,60 +530,51 @@
     function copyAccountToClipboard() {
         const user = getUser();
         navigator.clipboard.writeText(user.account_number || '3000000000');
-        showToast('Account number copied to clipboard!', 'success');
+        showToast('Account number copied!', 'success');
     }
 
     async function renderTransactions() {
-        const txns = (await getTransactions()).slice(0, 3); // Get top 3
+        const txns = (await getTransactions()).slice(0, 5);
         const list = document.getElementById('recent-transactions');
-        
         if (txns.length === 0) {
-            list.innerHTML = `
-                <div class="empty-state">
-                    <i data-feather="inbox" style="width: 40px; height: 40px; margin-bottom: 10px; opacity: 0.5;"></i>
-                    <p>No recent transactions.</p>
-                    <p class="text-xs mt-sm">Fund account or make a transfer to start.</p>
-                </div>
-            `;
-            feather.replace();
-            return;
+            list.innerHTML = `<div class="empty-state">
+                <i data-feather="inbox" style="width:36px;height:36px;margin-bottom:10px;opacity:0.4;"></i>
+                <p>No transactions yet</p>
+                <p class="text-xs" style="margin-top:6px;">Make a transfer or deposit to get started</p>
+            </div>`;
+            feather.replace(); return;
         }
-
-        let html = '';
-        txns.forEach(txn => {
-            const isExpense = txn.type === 'expense';
-            const icon = isExpense ? 'arrow-up-right' : 'arrow-down-left';
-            html += `
-                <a href="/transaction_details?txn_id=${txn.id}" class="transaction-item" style="text-decoration: none; color: inherit; cursor: pointer;">
-                    <div class="txn-left">
-                        <div class="txn-icon"><i data-feather="${icon}"></i></div>
-                        <div class="txn-details">
-                            <h4 style="text-align:left;">${txn.title}</h4>
-                            <p style="text-align:left;">${formatRelDate(txn.date)}</p>
-                        </div>
+        list.innerHTML = txns.map((txn, i) => {
+            const isExp = txn.type === 'expense';
+            return `<a href="/transaction_details?txn_id=${txn.id}" class="transaction-item animate-fade-in-up" style="animation-delay:${i*0.06}s;text-decoration:none;">
+                <div class="txn-left">
+                    <div class="txn-icon ${isExp ? 'expense' : 'income'}">
+                        <i data-feather="${isExp ? 'arrow-up-right' : 'arrow-down-left'}" style="width:16px;height:16px;"></i>
                     </div>
-                    <div class="txn-amount ${isExpense ? 'debit' : 'credit'}">
-                        ${isExpense ? '-' : '+'}${formatCurrency(txn.amount)}
+                    <div class="txn-details">
+                        <h4>${txn.title}</h4>
+                        <p>${formatRelDate(txn.date)}</p>
                     </div>
-                </a>
-            `;
-        });
-        list.innerHTML = html;
+                </div>
+                <div class="txn-amount ${isExp ? 'debit' : 'credit'}">
+                    ${isExp ? '−' : '+'}${formatCurrency(txn.amount)}
+                </div>
+            </a>`;
+        }).join('');
         feather.replace();
     }
 
     async function renderOracleFeed() {
         const oracle = await fetchOracleRates();
         if (!oracle) {
-            document.getElementById('oracle-rate').textContent = 'Unavailable';
-            document.getElementById('oracle-source').textContent = 'Oracle offline';
+            document.getElementById('oracle-rate').textContent = '—';
+            document.getElementById('oracle-source').textContent = 'Offline';
             document.getElementById('oracle-update').textContent = 'Could not retrieve data';
             return;
         }
-
         document.getElementById('oracle-rate').textContent = `₦${oracle.usd_ngn.toFixed(2)}`;
-        document.getElementById('oracle-source').textContent = oracle.is_fallback ? 'Fallback Oracle' : 'Live Oracle';
-        document.getElementById('oracle-update').textContent = new Date(oracle.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('oracle-source').textContent = oracle.is_fallback ? '⚡ Fallback' : '🟢 Live Oracle';
+        document.getElementById('oracle-update').textContent = new Date(oracle.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
     }
 </script>
 {% endblock %}
@@ -493,24 +582,19 @@
 {% block bottom_nav %}
 <div class="bottom-nav">
     <a href="{{ url_for('dashboard') }}" class="nav-item active">
-        <i data-feather="home"></i>
-        <span>Home</span>
+        <i data-feather="home"></i><span>Home</span>
     </a>
     <a href="{{ url_for('cards') }}" class="nav-item">
-        <i data-feather="credit-card"></i>
-        <span>Cards</span>
+        <i data-feather="credit-card"></i><span>Cards</span>
     </a>
     <a href="{{ url_for('transfer') }}" class="nav-item">
-        <i data-feather="send"></i>
-        <span>Pay</span>
+        <i data-feather="send"></i><span>Pay</span>
     </a>
     <a href="/save" class="nav-item">
-        <i data-feather="lock"></i>
-        <span>Save</span>
+        <i data-feather="lock"></i><span>Save</span>
     </a>
     <a href="{{ url_for('profile') }}" class="nav-item">
-        <i data-feather="user"></i>
-        <span>Profile</span>
+        <i data-feather="user"></i><span>Profile</span>
     </a>
 </div>
 {% endblock %}
