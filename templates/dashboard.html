@@ -282,7 +282,10 @@
     <div class="balance-card">
         <div class="balance-label-row">
             <span>TOTAL BALANCE (NGN)</span>
-            <i data-feather="eye" style="width: 16px; height: 16px; cursor: pointer; color: var(--brand-accent);" id="balance-toggle" onclick="toggleBalanceVisibility()"></i>
+            <span id="balance-toggle" onclick="toggleBalanceVisibility()" style="cursor: pointer; color: var(--brand-accent);">
+                <i id="icon-eye" data-feather="eye" style="width: 16px; height: 16px;"></i>
+                <i id="icon-eye-off" data-feather="eye-off" style="width: 16px; height: 16px; display: none;"></i>
+            </span>
         </div>
         <h1 class="balance-amount" id="display-balance">₦0.00</h1>
         <div class="account-number" onclick="copyAccountToClipboard()">
@@ -412,16 +415,18 @@
 
     function updateBalanceDisplay() {
         const amtEl = document.getElementById('display-balance');
-        const iconEl = document.getElementById('balance-toggle');
+        const eyeOn = document.getElementById('icon-eye');
+        const eyeOff = document.getElementById('icon-eye-off');
         
         if (isBalanceHidden) {
             amtEl.textContent = '₦••••••';
-            iconEl.setAttribute('data-feather', 'eye-off');
+            if (eyeOn) eyeOn.style.display = 'none';
+            if (eyeOff) eyeOff.style.display = 'inline-block';
         } else {
             amtEl.textContent = formatCurrency(realBalanceRaw);
-            iconEl.setAttribute('data-feather', 'eye');
+            if (eyeOn) eyeOn.style.display = 'inline-block';
+            if (eyeOff) eyeOff.style.display = 'none';
         }
-        feather.replace();
     }
 
     function copyAccountToClipboard() {

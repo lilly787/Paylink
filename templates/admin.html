@@ -147,6 +147,7 @@
         <div class="tab active" id="tab-users" onclick="switchAdminTab('users')">Users</div>
         <div class="tab" id="tab-transactions" onclick="switchAdminTab('transactions')">Ledger</div>
         <div class="tab" id="tab-fraud" onclick="switchAdminTab('fraud')">Fraud Alerts</div>
+        <div class="tab" id="tab-audit" onclick="switchAdminTab('audit')">Audit Logs</div>
     </div>
 
     <!-- 1. Users panel -->
@@ -212,6 +213,28 @@
             </table>
         </div>
     </div>
+
+    <!-- 4. Audit logs panel -->
+    <div id="audit-panel" class="admin-card" style="display: none;">
+        <h3 class="font-bold text-sm mb-md">System Security Audit Logs</h3>
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>Actor</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-audit-list">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -230,6 +253,8 @@
             await loadAdminTransactions();
         } else if (activeTab === 'fraud') {
             await loadAdminFraudAlerts();
+        } else if (activeTab === 'audit') {
+            await loadAdminAuditLogs();
         }
     }
 
@@ -241,6 +266,7 @@
         document.getElementById('users-panel').style.display = tabName === 'users' ? 'block' : 'none';
         document.getElementById('transactions-panel').style.display = tabName === 'transactions' ? 'block' : 'none';
         document.getElementById('fraud-panel').style.display = tabName === 'fraud' ? 'block' : 'none';
+        document.getElementById('audit-panel').style.display = tabName === 'audit' ? 'block' : 'none';
 
         refreshAdminData();
     }
@@ -388,6 +414,38 @@
             }
         } catch (e) {
             showToast('Action failed', 'error');
+        }
+    }
+
+    async function loadAdminAuditLogs() {
+        try {
+            const response = await fetch('/api/admin/audit-logs');
+            const result = await response.json();
+            const list = document.getElementById('admin-audit-list');
+            list.innerHTML = '';
+
+            if (!result.success || result.logs.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" class="text-center text-xs">Audit ledger is empty.</td></tr>';
+                return;
+            }
+
+            result.logs.forEach(l => {
+                const statusColor = l.status === 'success' ? 'var(--success)' : 'var(--danger)';
+                list.innerHTML += `
+                    <tr>
+                        <td><code style="font-size:10px;">AUD-${String(l.log_id).padStart(4, '0')}</code></td>
+                        <td>
+                            <div style="font-weight: 600; font-size:11px;">${l.actor_type.toUpperCase()} (ID: ${l.actor_id || 'SYS'})</div>
+                        </td>
+                        <td><span class="status-badge active" style="background: rgba(59, 130, 246, 0.15); color: var(--primary); font-size:9px;">${l.action}</span></td>
+                        <td style="font-size:11px; max-width:250px;">${l.description}</td>
+                        <td style="font-weight: 700; color: ${statusColor}; font-size:10px;">${l.status.toUpperCase()}</td>
+                        <td class="text-xs text-muted">${formatRelDate(l.created_at)}</td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            showToast('Failed to load audit logs', 'error');
         }
     }
 </script>

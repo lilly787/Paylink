@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session
 import database
 import oracle
+import oop_banking
 import re
 import random
 from datetime import datetime, timedelta
@@ -105,11 +106,17 @@ def api_register():
     phone = data.get('phone')
     password = data.get('password', 'password')
     pin = data.get('pin', '1234')
+    account_type = data.get('account_type', 'savings')
     
-    user = database.register_user(fullname, email, phone, password, pin)
-    if user:
-        return jsonify({"success": True, "user": user})
-    return jsonify({"success": False, "message": "Email already exists"}), 400
+    try:
+        user = database.register_user(fullname, email, phone, password, pin, account_type)
+        if user:
+            return jsonify({"success": True, "user": user})
+        return jsonify({"success": False, "message": "Email already exists"}), 400
+    except oop_banking.BankingException as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+    except Exception:
+        return jsonify({"success": False, "message": "Internal registration error"}), 500
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
@@ -142,7 +149,7 @@ def api_setup_pin():
     
     conn = database.get_db_connection()
     c = conn.cursor()
-    c.execute('UPDATE users SET pin_hash = ? WHERE id = ?', (database.hash_sha256(pin), user_id))
+    c.execute('UPDATE customers SET pin_hash = ? WHERE customer_id = ?', (database.hash_sha256(pin), user_id))
     conn.commit()
     conn.close()
     
@@ -171,101 +178,101 @@ def api_transfer():
     pin = data.get('pin')
     category = data.get('category', 'transfer')
     
-    # 1. Security Check: Block Frozen Account
-    user = database.get_user_by_id(user_id)
-    if not user:
-        return jsonify({"success": False, "message": "User not found"}), 404
-    if user['is_frozen']:
-        return jsonify({"success": False, "message": "Account is frozen. All outgoing transactions are blocked."}), 403
-        
-    # 2. PIN Verification
-    if not database.verify_user_pin(user_id, pin):
-        return jsonify({"success": False, "message": "Invalid security PIN"}), 400
-        
-    # 3. Insufficient Funds Check
-    if user['balance'] < amount:
-        return jsonify({"success": False, "message": "Insufficient wallet balance"}), 400
-        
-    # 4. Fraud Detection Engine
-    fraud_flagged = False
-    fraud_reason = ""
-    
-    # A. Large Transfer Check (> ₦50,000)
-    if amount > 50000.00:
-        fraud_flagged = True
-        fraud_reason = f"Large transfer flag: {amount:,.2f} Naira transferred to {recipient_name}."
-        
-    # B. Rapid Withdrawals Check (>3 transactions in 2 minutes)
-    recent_txns = database.get_transactions(user_id)[:3]
-    if len(recent_txns) >= 2:
-        try:
-            # Check relative dates
-            now = datetime.utcnow()
-            rapid_count = 0
-            for rx in recent_txns:
-                rx_date = datetime.fromisoformat(rx['date'].replace('Z', ''))
-                if now - rx_date < timedelta(minutes=2):
-                    rapid_count += 1
-            if rapid_count >= 2:
-                fraud_flagged = True
-                fraud_reason = "Rapid withdrawals: Multiple rapid outlays flagged under 2 minutes."
-        except Exception:
-            pass
+    try:
+        # 1. Security Check: Block Frozen Account
+        user = database.get_user_by_id(user_id)
+        if not user:
+            return jsonify({"success": False, "message": "User not found"}), 404
+        if user['is_frozen']:
+            return jsonify({"success": False, "message": "Account is frozen. All outgoing transactions are blocked."}), 403
             
-    # 5. Process Balance Deductions
-    database.update_balance(user_id, amount, is_expense=True)
-    
-    # Record transaction receipt & references
-    ref = database.generate_unique_ref()
-    receipt_data = {
-        "sender": user['fullname'],
-        "recipient": recipient_name,
-        "recipient_account": recipient_acc,
-        "amount": amount,
-        "date": datetime.utcnow().isoformat() + 'Z',
-        "reference": ref,
-        "category": category,
-        "description": desc
-    }
-    
-    txn_id = database.add_transaction(
-        user_id=user_id, 
-        type_='expense', 
-        amount=amount, 
-        title=f"Transfer to {recipient_name}", 
-        desc=desc, 
-        reference=ref, 
-        category=category, 
-        receipt_data=receipt_data
-    )
-    
-    # 6. Process Recipient Increase (If it is an internal account number)
-    recipient_user = database.get_user_by_account(recipient_acc)
-    if recipient_user:
-        database.update_balance(recipient_user['id'], amount, is_expense=False)
-        database.add_transaction(
-            user_id=recipient_user['id'],
-            type_='income',
-            amount=amount,
-            title=f"Funds from {user['fullname']}",
-            desc=f"Wallet transfer ref: {ref}",
-            reference=database.generate_unique_ref(),
-            category='transfer'
+        # 2. PIN Verification
+        if not database.verify_user_pin(user_id, pin):
+            return jsonify({"success": False, "message": "Invalid security PIN"}), 400
+            
+        # 3. Fraud Detection Engine
+        fraud_flagged = False
+        fraud_reason = ""
+        
+        # A. Large Transfer Check (> ₦50,000)
+        if amount > 50000.00:
+            fraud_flagged = True
+            fraud_reason = f"Large transfer flag: {amount:,.2f} Naira transferred to {recipient_name}."
+            
+        # B. Rapid Withdrawals Check (>3 transactions in 2 minutes)
+        recent_txns = database.get_transactions(user_id)[:3]
+        if len(recent_txns) >= 2:
+            try:
+                # Check relative dates
+                now = datetime.utcnow()
+                rapid_count = 0
+                for rx in recent_txns:
+                    rx_date = datetime.fromisoformat(rx['date'].replace('Z', ''))
+                    if now - rx_date < timedelta(minutes=2):
+                        rapid_count += 1
+                if rapid_count >= 2:
+                    fraud_flagged = True
+                    fraud_reason = "Rapid withdrawals: Multiple rapid outlays flagged under 2 minutes."
+            except Exception:
+                pass
+                
+        # 4. Process Balance Deductions (invokes OOP validation)
+        database.update_balance(user_id, amount, is_expense=True)
+        
+        # Record transaction receipt & references
+        ref = database.generate_unique_ref()
+        receipt_data = {
+            "sender": user['fullname'],
+            "recipient": recipient_name,
+            "recipient_account": recipient_acc,
+            "amount": amount,
+            "date": datetime.utcnow().isoformat() + 'Z',
+            "reference": ref,
+            "category": category,
+            "description": desc
+        }
+        
+        txn_id = database.add_transaction(
+            user_id=user_id, 
+            type_='expense', 
+            amount=amount, 
+            title=f"Transfer to {recipient_name}", 
+            desc=desc, 
+            reference=ref, 
+            category=category, 
+            receipt_data=receipt_data
         )
-        database.add_notification(recipient_user['id'], 'success', 'Funds Received', f'You received ₦{amount:,.2f} from {user["fullname"]}.')
-
-    # Trigger Fraud Alerts
-    if fraud_flagged:
-        database.add_fraud_alert(user_id, 'suspicious_activity', txn_id, fraud_reason)
-        # Notify user of a high priority system security flag
-        database.add_notification(user_id, 'warning', 'Security Alert Triggered', f"Transaction of {amount:,.2f} flagged. Account under surveillance.")
-
-    # Success notification
-    database.add_notification(user_id, 'success', 'Transfer Successful', f"Sent ₦{amount:,.2f} to {recipient_name}.")
-
-    # Load updated user info
-    updated_user = database.get_user_by_id(user_id)
-    return jsonify({"success": True, "balance": updated_user['balance'], "txn_id": txn_id})
+        
+        # 5. Process Recipient Increase (If it is an internal account number)
+        recipient_user = database.get_user_by_account(recipient_acc)
+        if recipient_user:
+            database.update_balance(recipient_user['id'], amount, is_expense=False)
+            database.add_transaction(
+                user_id=recipient_user['id'],
+                type_='income',
+                amount=amount,
+                title=f"Funds from {user['fullname']}",
+                desc=f"Wallet transfer ref: {ref}",
+                reference=database.generate_unique_ref(),
+                category='transfer'
+            )
+            database.add_notification(recipient_user['id'], 'success', 'Funds Received', f'You received ₦{amount:,.2f} from {user["fullname"]}.')
+    
+        # Trigger Fraud Alerts
+        if fraud_flagged:
+            database.add_fraud_alert(user_id, 'suspicious_activity', txn_id, fraud_reason)
+            database.add_notification(user_id, 'warning', 'Security Alert Triggered', f"Transaction of {amount:,.2f} flagged. Account under surveillance.")
+    
+        # Success notification
+        database.add_notification(user_id, 'success', 'Transfer Successful', f"Sent ₦{amount:,.2f} to {recipient_name}.")
+    
+        # Load updated user info
+        updated_user = database.get_user_by_id(user_id)
+        return jsonify({"success": True, "balance": updated_user['balance'], "txn_id": txn_id})
+    except oop_banking.BankingException as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"success": False, "message": "An error occurred during transfer."}), 500
 
 @app.route('/api/transactions/<int:user_id>')
 def api_transactions(user_id):
@@ -285,15 +292,20 @@ def api_deposit():
     user_id = data.get('user_id')
     amount = float(data.get('amount'))
     
-    # Update balance (income)
-    database.update_balance(user_id, amount, is_expense=False)
-    # Record transaction
-    ref = database.generate_unique_ref()
-    database.add_transaction(user_id, 'income', amount, "Card Deposit", "Self-funded via debit card", reference=ref, category='deposit')
-    database.add_notification(user_id, 'success', 'Funds Deposited', f"Deposited ₦{amount:,.2f} via debit card.")
-    
-    user = database.get_user_by_id(user_id)
-    return jsonify({"success": True, "balance": user['balance']})
+    try:
+        # Update balance (income)
+        database.update_balance(user_id, amount, is_expense=False)
+        # Record transaction
+        ref = database.generate_unique_ref()
+        database.add_transaction(user_id, 'income', amount, "Card Deposit", "Self-funded via debit card", reference=ref, category='deposit')
+        database.add_notification(user_id, 'success', 'Funds Deposited', f"Deposited ₦{amount:,.2f} via debit card.")
+        
+        user = database.get_user_by_id(user_id)
+        return jsonify({"success": True, "balance": user['balance']})
+    except oop_banking.BankingException as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+    except Exception:
+        return jsonify({"success": False, "message": "An error occurred during deposit."}), 500
 
 # -- Virtual Card System API --
 
@@ -309,10 +321,9 @@ def api_create_card():
     funding = float(data.get('amount'))
     pin = data.get('pin')
     
-    user = database.get_db_connection().execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    user = database.get_user_by_id(user_id)
     if not user:
         return jsonify({"success": False, "message": "User not found"}), 404
-    user = dict(user)
     
     if user['is_frozen']:
         return jsonify({"success": False, "message": "Cannot create card: Account is frozen"}), 403
@@ -468,6 +479,12 @@ def api_admin_fraud():
     alerts = database.get_fraud_alerts()
     return jsonify({"success": True, "alerts": alerts})
 
+@app.route('/api/admin/audit-logs')
+def api_admin_audit_logs():
+    mgr = oop_banking.get_db_manager()
+    logs = mgr.get_audit_logs()
+    return jsonify({"success": True, "logs": logs})
+
 @app.route('/api/admin/fraud/resolve', methods=['POST'])
 def api_admin_fraud_resolve():
     data = request.json
@@ -514,8 +531,13 @@ def api_ai_interpret():
         amount = parse_amount(amount_str)
         if amount:
             conn = database.get_db_connection()
-            # fuzzy match names
-            matched_user = conn.execute("SELECT * FROM users WHERE fullname LIKE ? AND id != ?", (f"%{name}%", user_id)).fetchone()
+            # fuzzy match names in 3NF schema
+            matched_user = conn.execute('''
+                SELECT customers.customer_id AS id, customers.fullname, accounts.account_number
+                FROM customers
+                JOIN accounts ON customers.customer_id = accounts.customer_id
+                WHERE customers.fullname LIKE ? AND customers.customer_id != ?
+            ''', (f"%{name}%", user_id)).fetchone()
             conn.close()
             
             if matched_user:

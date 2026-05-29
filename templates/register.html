@@ -69,6 +69,14 @@
         </div>
 
         <div class="input-group">
+            <label class="input-label" for="account_type">Account Type</label>
+            <select id="account_type" class="input-field" style="background: var(--surface-card); color: var(--text-white); border: 0.5px solid var(--border-divider); border-radius: var(--radius-md); padding: var(--space-xs) var(--space-sm); width: 100%; cursor: pointer;" required>
+                <option value="savings">Savings Account (15% p.a., min ₦5,000)</option>
+                <option value="current">Current Account (1% p.a., ₦100,000 Overdraft)</option>
+            </select>
+        </div>
+
+        <div class="input-group">
             <label class="input-label" for="password">Password</label>
             <input type="password" id="password" class="input-field" placeholder="Create a strong password" required>
         </div>
@@ -96,6 +104,7 @@
         const phone = document.getElementById('phone').value;
         const password = document.getElementById('password').value;
         const confirm_password = document.getElementById('confirm_password').value;
+        const account_type = document.getElementById('account_type').value;
         
         if (password !== confirm_password) {
             showToast('Passwords do not match!', 'error');
@@ -103,7 +112,7 @@
         }
         
         // Registers user. Their OTP entry in the next screen will act as defining their custom Transaction PIN!
-        const success = await registerUser(fullname, email, phone, password, '1234');
+        const success = await registerUser(fullname, email, phone, password, '1234', account_type);
         if (success) {
             window.location.href = "{{ url_for('otp') }}";
         }

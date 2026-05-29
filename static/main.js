@@ -1,12 +1,12 @@
 /* main.js - Paylink Core Client SDK */
 
 // Auth System
-async function registerUser(fullname, email, phone, password, pin) {
+async function registerUser(fullname, email, phone, password, pin, account_type = 'savings') {
     try {
         const response = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fullname, email, phone, password, pin })
+            body: JSON.stringify({ fullname, email, phone, password, pin, account_type })
         });
         const result = await response.json();
         if (result.success) {
