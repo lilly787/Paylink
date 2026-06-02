@@ -7,10 +7,10 @@ Purpose: These notes explain the system in detail and point to exact files and c
 - What to show: routes defined for UI pages (e.g., `@app.route('/transfer')`), API endpoints (e.g., `/api/oracle/rates`, `/api/admin/*`).
 - Where to edit: top-level route handlers and API route functions inside `app.py`.
 
-2) Database abstraction
+2) Database persistence
 - File: [oop_banking.py](oop_banking.py)
-- Key classes: `DatabaseManager` base, `OracleDatabaseManager`, `SQLiteDatabaseManager` (search for "class OracleDatabaseManager" in file).
-- Where provider is selected: `get_db_manager()` at the bottom of `oop_banking.py`.
+- Key classes: `DatabaseManager` base, `OracleDatabaseManager` (search for "class OracleDatabaseManager" in file).
+- Database initialization: `get_db_manager()` at the bottom of `oop_banking.py`.
 - Important methods: `get_connection()`, `register_customer()`, `add_transaction()`, `get_transactions()` in the Oracle manager implementation.
 
 3) App-level helpers
@@ -40,7 +40,7 @@ Purpose: These notes explain the system in detail and point to exact files and c
 - `static/style.css`: UI styles including bottom nav.
 
 8) Running locally
-- Ensure env vars are set: `ORACLE_DSN`, `ORACLE_USER`, `ORACLE_PWD`, `DATABASE_PROVIDER=oracle`.
+- Ensure env vars are set: `ORACLE_DSN`, `ORACLE_USER`, `ORACLE_PWD`.
 - Start app: `python app.py` and open `http://127.0.0.1:5000`.
 
 9) Admin credentials / seeded users

@@ -147,11 +147,7 @@ def api_setup_pin():
     user_id = data.get('user_id')
     pin = data.get('pin')
     
-    conn = database.get_db_connection()
-    c = conn.cursor()
-    c.execute('UPDATE customers SET pin_hash = ? WHERE customer_id = ?', (database.hash_sha256(pin), user_id))
-    conn.commit()
-    conn.close()
+    database.setup_pin(user_id, pin)
     
     updated_user = database.get_user_by_id(user_id)
     return jsonify({"success": True, "user": updated_user})
@@ -423,11 +419,7 @@ def api_pay_bills():
     if bill_type == 'electricity':
         token = "-".join(["".join([str(random.randint(0, 9)) for _ in range(4)]) for _ in range(5)])
         receipt_data['token'] = token
-        conn = database.get_db_connection()
-        import json
-        conn.execute("UPDATE transactions SET receipt_json = ? WHERE id = ?", (json.dumps(receipt_data), txn_id))
-        conn.commit()
-        conn.close()
+        database.update_transaction_receipt(txn_id, receipt_data)
         
     updated_user = database.get_user_by_id(user_id)
     return jsonify({"success": True, "balance": updated_user['balance'], "txn_id": txn_id})
@@ -533,15 +525,7 @@ def api_ai_interpret():
     if name and amount_str:
         amount = parse_amount(amount_str)
         if amount:
-            conn = database.get_db_connection()
-            # fuzzy match names in 3NF schema
-            matched_user = conn.execute('''
-                SELECT customers.customer_id AS id, customers.fullname, accounts.account_number
-                FROM customers
-                JOIN accounts ON customers.customer_id = accounts.customer_id
-                WHERE customers.fullname LIKE ? AND customers.customer_id != ?
-            ''', (f"%{name}%", user_id)).fetchone()
-            conn.close()
+            matched_user = database.find_user_by_fuzzy_name(name, user_id)
             
             if matched_user:
                 matched_user = dict(matched_user)

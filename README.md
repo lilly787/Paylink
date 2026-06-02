@@ -26,7 +26,6 @@ Set these before running the app (Windows example):
 setx ORACLE_DSN "localhost:1521/XE"
 setx ORACLE_USER "VERITAS_ADMIN"
 setx ORACLE_PWD "YourSecurePassword"
-setx DATABASE_PROVIDER "oracle"
 ```
 
 On macOS / Linux use `export` instead of `setx`.
@@ -34,7 +33,6 @@ On macOS / Linux use `export` instead of `setx`.
 - `ORACLE_DSN`: host:port/SERVICE_NAME (e.g. `localhost:1521/XE`)
 - `ORACLE_USER`: Oracle user (e.g. `VERITAS_ADMIN`)
 - `ORACLE_PWD`: Oracle password
-- `DATABASE_PROVIDER`: set to `oracle` to use Oracle manager
 
 ## Provision Oracle Schema
 Option A — Use `sqlcl` / SQL Developer / sqlplus

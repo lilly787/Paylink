@@ -443,31 +443,147 @@ CREATE INDEX idx_transactions_dashboard ON transactions(account_id, date_created
 
 ## 7. Deployment Guide
 
-### Local Development / Quick Start (SQLite Polymorphic fallback)
-1. Install Flask:
-   ```bash
-   pip install Flask
-   ```
-2. Start the application:
-   ```bash
-   python app.py
-   ```
-3. Open your browser and navigate to `http://localhost:5000`. The application will automatically create `paylink.db` and migrate database schemas to the 3NF layout.
+The Veritas Microfinance digital banking platform runs exclusively on the **Oracle Database** enterprise engine using **python-oracledb** in thin-mode, requiring no Oracle Instant Client files.
 
-### Connecting to an active Oracle Database
-1. Install the Oracle database connector:
-   ```bash
-   pip install oracledb
-   ```
-2. Set environment variables to configure the database provider:
-   ```bash
-   set DATABASE_PROVIDER=oracle
-   set ORACLE_DSN=your-oracle-host:1521/XEPDB1
-   set ORACLE_USER=VERITAS_ADMIN
-   set ORACLE_PWD=YourSecurePassword
-   ```
-3. Run `oracle_schema.sql` inside your Oracle SQL Developer client to build the tables, triggers, and PL/SQL procedures.
-4. Launch the application:
-   ```bash
-   python app.py
-   ```
+### 1. Prerequisites & Dependencies
+Ensure Python is installed on your local host, then run standard installation:
+```bash
+pip install Flask oracledb
+```
+
+### 2. Environment Variables Configuration
+Configure connection parameters so the application can locate your active Oracle database instance (Windows example):
+```powershell
+set ORACLE_DSN=localhost:1521/XE
+set ORACLE_USER=system
+set ORACLE_PWD=12345678
+```
+*(On macOS or Linux, use standard `export` syntax instead of `set`).*
+
+### 3. Database Schema Initialization
+To initialize your tables, constraints, sequences, triggers, and custom stored procedures:
+- Option A: Log in to **Oracle SQL Developer** using the credentials above and execute the entire contents of [oracle_schema.sql](oracle_schema.sql).
+- Option B: Run the automated setup helper script:
+```bash
+python setup_oracle.py
+```
+
+### 4. Running the Web Application
+Start the Flask application server:
+```bash
+python app.py
+```
+Open `http://localhost:5000` in any modern web browser to access the active digital banking platform.
+
+---
+
+## 8. Offline Architecture (PWA) & Future Enhancements Guide
+
+To support offline banking in remote university environments or during network drops, Veritas Microfinance Bank can implement a **Progressive Web App (PWA)** offline architectural sync pattern.
+
+### 1. Progressive Web App (PWA) Offline Framework
+
+```mermaid
+flowchart TD
+    Browser[Client Web Browser] --> SW{Service Worker}
+    SW -- Online --> Network[Flask App / Oracle DB]
+    SW -- Offline --> OfflineCache[Cache Storage API: HTML/CSS/JS]
+    Browser -- Transaction --> IndexedDB[(IndexedDB local storage)]
+    IndexedDB -- Queue offline txns --> Sync[Background Sync Engine]
+    Sync -- Sync trigger on recovery --> Network
+```
+
+#### A. Service Workers & Caching Static Assets
+A custom Service Worker registers on page load to intercept client network requests, serve cached UI pages when offline, and manage network requests.
+```javascript
+// Register Service Worker in static/main.js
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg => console.log('Service Worker Registered successfully!'))
+    .catch(err => console.error('Service Worker registration failed:', err));
+}
+```
+Inside `sw.js`, compile a list of static page assets to cache locally using the **Cache Storage API**:
+```javascript
+const CACHE_NAME = 'paylink-v1';
+const ASSETS_TO_CACHE = [
+  '/',
+  '/login',
+  '/dashboard',
+  '/transfer',
+  '/static/style.css',
+  '/static/main.js',
+  '/static/img/logo.png'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
+  );
+});
+```
+
+#### B. Offline Local Persistence using IndexedDB
+To handle transactions while offline, the browser holds account balances and registers transactional payloads using **IndexedDB** (a transaction-safe browser storage mechanism):
+1. **Cache Account Profile**: When online, the latest user record is persisted to a local IndexedDB user store.
+2. **Debit Deductions locally**: If a transfer is executed while offline, the system validates the withdrawal against the cached local balance. If valid, the browser reduces the local balance and registers an offline transaction log.
+3. **Queue Transaction**: The transaction object is saved to an `offline_txns` IndexedDB queue with a temporary reference key (e.g. `PLK-TEMP-12345`).
+
+#### C. Background Sync Synchronization Protocol
+When the browser detects that connection is restored, the **Background Sync API** triggers automatically to flush the queue to Oracle Database:
+```javascript
+// Register background sync in client code
+navigator.serviceWorker.ready.then(swRegistration => {
+  return swRegistration.sync.register('flush-offline-transactions');
+});
+```
+Inside the Service Worker `sw.js`, listen to the sync event, read items from the IndexedDB queue, and send them to the Flask `/api/transfer` route:
+```javascript
+self.addEventListener('sync', event => {
+  if (event.tag === 'flush-offline-transactions') {
+    event.waitUntil(flushTransactionsQueue());
+  }
+});
+
+async function flushTransactionsQueue() {
+  const txns = await getQueuedTransactionsFromIndexedDB();
+  for (let txn of txns) {
+    try {
+      const response = await fetch('/api/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(txn)
+      });
+      const result = await response.json();
+      if (result.success) {
+        await removeTxnFromIndexedDB(txn.temp_id);
+      }
+    } catch (err) {
+      console.error("Flush failure, will retry next online sync:", err);
+    }
+  }
+}
+```
+
+#### D. Oracle Database Isolation & Replay-Attack Protections
+- **Idempotent Keys**: Every transaction generates a cryptographically random reference UUID client-side. The database enforces a `UNIQUE` constraint on the `reference` column. If an offline queue is synced twice, Oracle discards duplicate entries automatically, avoiding double-debits.
+- **Timestamp Ordering**: Transactions write using the client-side execution timestamp to maintain accurate chronological sequencing in accounts ledgers.
+
+---
+
+### 2. Future System Enhancements Roadmap
+
+Beyond offline capabilities, the Veritas Digital Banking platform is designed for future scaling:
+
+1. **Biometric Security Simulation**: Integrating standard browser WebAuthn specifications so students can authorize transaction PIN approvals via local device facial or fingerprint scanning.
+2. **Automated Savings Vault Triggers**: Oracle database PL/SQL triggers automatically running daily interest accretion tasks for standard `SavingsAccount` holders based on Ledger balances.
+3. **Advanced Machine Learning Fraud Prevention**: Integration of an ML model pipeline checking user transaction habits in real-time, assigning a risk score dynamically to each transaction before database commit.
+4. **Multi-Currency Wallets**: Supporting standard multi-currency accounts leveraging the dynamic caching oracle engine in `oracle.py` to convert ledger amounts on-the-fly.

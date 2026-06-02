@@ -113,7 +113,7 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// Transactions System using SQLite API
+// Transactions System using Oracle Database API
 async function getTransactions() {
     const user = getUser();
     if (user.id === 0) return [];

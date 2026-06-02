@@ -8,22 +8,22 @@ import oop_banking
 import database
 
 def run_tests():
-    print("--- Starting Paylink OOP Integration Tests ---")
+    print("--- Starting Paylink OOP Integration Tests (Oracle Database) ---")
     
-    # 1. Force SQLite database refresh
-    if os.path.exists('paylink.db'):
-        try:
-            os.remove('paylink.db')
-            print("Removed old test database file.")
-        except Exception as e:
-            print(f"Could not remove old database file: {e}")
-            
-    os.environ['DATABASE_PROVIDER'] = 'sqlite'
+    # Verify Oracle environment
+    dsn = os.environ.get("ORACLE_DSN", "localhost:1521/XE")
+    user = os.environ.get("ORACLE_USER", "system")
+    print(f"Target Oracle database: {dsn} as user: {user}")
     
     print("\n[Test 1] Initializing Database Schema...")
-    database.init_db()
-    mgr = oop_banking.get_db_manager()
-    print("Successfully initialized 3NF SQLite database.")
+    try:
+        database.init_db()
+        mgr = oop_banking.get_db_manager()
+        print("Successfully connected and initialized Oracle Database schema.")
+    except Exception as e:
+        print(f"FAIL: Oracle Database initialization failed: {e}")
+        print("Please ensure your Oracle XE instance is running and your ORACLE_DSN, ORACLE_USER, and ORACLE_PWD environment variables are set correctly.")
+        sys.exit(1)
 
     print("\n[Test 2] Testing Customer Registration...")
     email = "test_student@veritas.edu.ng"

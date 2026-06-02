@@ -45,17 +45,17 @@ Speaker: (Your name)
 
 # Slide 6 — Demo Steps
 1. Start Oracle and ensure schema via `oracle_schema.sql` or `setup_oracle.py`.
-2. Set env vars (`ORACLE_DSN`, `ORACLE_USER`, `ORACLE_PWD`, `DATABASE_PROVIDER=oracle`).
+2. Set env vars (`ORACLE_DSN`, `ORACLE_USER`, `ORACLE_PWD`).
 3. Run `python app.py` and open `http://127.0.0.1:5000`.
 4. Login with seeded admin user (if seeded) or register a new user.
 5. Visit `Transfer` to demonstrate live Oracle rate and transfer flow.
-6. Open `Admin` to inspect users, transactions, and audit logs.
+6. Open `Admin` to show users, transactions, and audit logs.
 
 ---
 
 # Slide 7 — Code Map (Quick)
 - `app.py`: routes & APIs
-- `oop_banking.py`: database manager implementations (Oracle/SQLite)
+- `oop_banking.py`: database manager implementations (Oracle Enterprise thin-mode)
 - `database.py`: higher-level functions used by routes
 - `oracle.py`: external rate fetcher
 - `templates/`: per-page HTML (e.g., `transfer.html`, `admin.html`)

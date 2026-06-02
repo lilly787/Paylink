@@ -2,8 +2,7 @@
 database.py – Bridge module for Paylink.
 
 ALL persistence is routed through oop_banking.get_db_manager(), which returns
-an OracleDatabaseManager when DATABASE_PROVIDER=oracle is set in the
-environment.  There is zero direct sqlite3 usage here.
+an OracleDatabaseManager. There is zero SQLite usage here.
 """
 
 import os
@@ -311,3 +310,53 @@ def get_fraud_alerts():
 def resolve_fraud_alert(alert_id):
     mgr = oop_banking.get_db_manager()
     mgr.resolve_fraud_alert(alert_id)
+
+
+# ---- PURE ORACLE DB HELPERS FOR ROUTER ----
+
+def get_db_connection():
+    """Returns an active Oracle database connection from the manager."""
+    return oop_banking.get_db_manager().get_connection()
+
+
+def setup_pin(user_id, pin):
+    """Securely updates the customer's PIN hash in the Oracle database."""
+    mgr = oop_banking.get_db_manager()
+    conn = mgr.get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE customers SET pin_hash = :1 WHERE customer_id = :2", (hash_sha256(pin), user_id))
+    conn.commit()
+    conn.close()
+
+
+def update_transaction_receipt(txn_id, receipt_data):
+    """Updates the JSON receipt metadata of a transaction in Oracle."""
+    import json
+    mgr = oop_banking.get_db_manager()
+    conn = mgr.get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE transactions SET receipt_json = :1 WHERE transaction_id = :2", (json.dumps(receipt_data), txn_id))
+    conn.commit()
+    conn.close()
+
+
+def find_user_by_fuzzy_name(name, user_id):
+    """Finds a customer by fuzzy name match in Oracle, returning standard dict details."""
+    mgr = oop_banking.get_db_manager()
+    conn = mgr.get_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        SELECT c.customer_id, c.fullname, a.account_number
+        FROM customers c
+        JOIN accounts a ON c.customer_id = a.customer_id
+        WHERE UPPER(c.fullname) LIKE UPPER(:1) AND c.customer_id != :2
+    ''', (f"%{name}%", user_id))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return {
+            "id": row[0],
+            "fullname": row[1],
+            "account_number": row[2]
+        }
+    return None
