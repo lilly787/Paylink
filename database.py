@@ -50,9 +50,9 @@ def _adapt_customer_to_user_dict(customer, account):
 def init_db():
     """Initialises the schema via the polymorphic OOP manager."""
     mgr = oop_banking.get_db_manager()
-    # For Oracle the schema is pre-created via oracle_schema.sql;
-    # init_db seeds branches and staff if needed.
-    # For SQLite it creates all tables.
+    # Oracle schema is expected to be provisioned externally via oracle_schema.sql.
+    # init_db seeds default branches and staff if needed.
+    mgr.init_db()
 
 
 # ---- USER FUNCTIONS ----
@@ -144,34 +144,19 @@ def update_balance(user_id, amount, is_expense=True):
 
     # Persist the new balance through the manager
     mgr.update_account_status(account.account_id, int(account.is_frozen))  # touch row to fire trigger
-    # Direct balance update via dedicated method available on Oracle manager
     _persist_balance(mgr, account)
 
 
 def _persist_balance(mgr, account):
     """Saves the in-memory account balance back to the database."""
-    # OracleDatabaseManager.update_account_status only touches is_frozen.
-    # We use a lightweight transfer of (0, 0) to re-use the connection helper:
-    try:
-        conn = mgr.get_connection()
-        cur  = conn.cursor()
-        cur.execute(
-            "UPDATE accounts SET balance = :1 WHERE account_id = :2",
-            (account.balance, account.account_id)
-        )
-        conn.commit()
-        conn.close()
-    except AttributeError:
-        # SQLiteDatabaseManager – fall back to its direct connection
-        import sqlite3
-        db_file = getattr(mgr, 'db_file', 'paylink.db')
-        conn = sqlite3.connect(db_file)
-        conn.execute(
-            "UPDATE accounts SET balance = ? WHERE account_id = ?",
-            (account.balance, account.account_id)
-        )
-        conn.commit()
-        conn.close()
+    conn = mgr.get_connection()
+    cur  = conn.cursor()
+    cur.execute(
+        "UPDATE accounts SET balance = :1 WHERE account_id = :2",
+        (account.balance, account.account_id)
+    )
+    conn.commit()
+    conn.close()
 
 
 def toggle_user_freeze(user_id, status):
@@ -230,24 +215,7 @@ def get_all_transactions():
 
 def get_transaction_by_id(txn_id):
     mgr = oop_banking.get_db_manager()
-    # OracleDatabaseManager has get_transaction_by_id; SQLiteDatabaseManager falls back
-    if hasattr(mgr, 'get_transaction_by_id'):
-        return mgr.get_transaction_by_id(txn_id)
-    # SQLite fallback
-    import sqlite3
-    db_file = getattr(mgr, 'db_file', 'paylink.db')
-    conn = sqlite3.connect(db_file)
-    conn.row_factory = sqlite3.Row
-    row  = conn.execute(
-        "SELECT * FROM transactions WHERE transaction_id = ?", (txn_id,)
-    ).fetchone()
-    conn.close()
-    if not row:
-        return None
-    d = dict(row)
-    d['id']      = row['transaction_id']
-    d['user_id'] = row['account_id']
-    return d
+    return mgr.get_transaction_by_id(txn_id)
 
 
 # ---- VIRTUAL CARD FUNCTIONS ----

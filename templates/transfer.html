@@ -191,6 +191,50 @@
                     <option value="UBA">United Bank for Africa (UBA)</option>
                     <option value="Kuda">Kuda Microfinance Bank</option>
                     <option value="Wema">Wema Bank (ALAT)</option>
+                    <option value="Ecobank">Ecobank Nigeria</option>
+                    <option value="Fidelity">Fidelity Bank</option>
+                    <option value="FirstBank">First Bank of Nigeria</option>
+                    <option value="FCMB">First City Monument Bank (FCMB)</option>
+                    <option value="UnionBank">Union Bank of Nigeria</option>
+                    <option value="Sterling">Sterling Bank</option>
+                    <option value="ZenithMicro">Zenith Microfinance Bank</option>
+                    <option value="Polaris">Polaris Bank</option>
+                    <option value="Heritage">Heritage Bank</option>
+                    <option value="Stanbic">Stanbic IBTC Bank</option>
+                    <option value="SunTrust">SunTrust Bank</option>
+                    <option value="Jaiz">Jaiz Bank</option>
+                    <option value="Unity">Unity Bank</option>
+                    <option value="Keystone">Keystone Bank</option>
+                    <option value="Globus">Globus Bank</option>
+                    <option value="Parallex">Parallex Bank</option>
+                    <option value="VFD">VFD Microfinance Bank</option>
+                    <option value="ALAT">ALAT by Wema Bank</option>
+                    <option value="Titan">Titan Trust Bank</option>
+                    <option value="RandMerchant">Rand Merchant Bank</option>
+                    <option value="GTCoop">GTCO Plc</option>
+                    <option value="ABC">ABC Bank</option>
+                    <option value="CSCS">CSCS Bank</option>
+                    <option value="FSDH">FSDH Merchant Bank</option>
+                    <option value="GlobusMicro">Globus Microfinance Bank</option>
+                    <option value="Kore">Kore Bank</option>
+                    <option value="LAPO">LAPO Microfinance Bank</option>
+                    <option value="MFB">Mainstreet Bank</option>
+                    <option value="NMB">Nigerian Merchant Bank</option>
+                    <option value="NovaMicro">Nova Microfinance Bank</option>
+                    <option value="Omoluabi">Omoluabi Savings and Loans</option>
+                    <option value="Paga">Paga Bank</option>
+                    <option value="ProCredit">ProCredit Bank</option>
+                    <option value="StanTrust">StanTrust Bank</option>
+                    <option value="SunTrustMicro">SunTrust Microfinance Bank</option>
+                    <option value="TAJ">TAJBank</option>
+                    <option value="TitanMicro">Titan Microfinance Bank</option>
+                    <option value="UnionMicro">Union Microfinance Bank</option>
+                    <option value="WemaMicro">Wema Microfinance Bank</option>
+                    <option value="ZenithMicro2">Zenith Microfinance Bank 2</option>
+                    <option value="Globalbank">Global Bank</option>
+                    <option value="Mainstreet">Mainstreet Bank Ltd</option>
+                    <option value="TrustBond">TrustBond Savings</option>
+                    <option value="CitiBank">Citibank Nigeria</option>
                 </select>
             </div>
 
@@ -207,6 +251,17 @@
                     <p class="text-xs text-muted" style="font-size: 10px; text-transform: uppercase;">NIP Verified Name</p>
                     <h4 class="font-headings" id="resolved-name" style="font-size: 0.875rem; font-weight: 500;">Resolving...</h4>
                 </div>
+            </div>
+        </div>
+
+        <div class="exchange-rate-box mb-md" style="display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1rem; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);">
+            <div>
+                <p class="text-xs text-muted" style="margin: 0 0 4px;">Live Oracle Exchange Rate</p>
+                <h3 class="font-bold" style="margin: 0;">$1 = ₦<span id="oracle-rate">—</span></h3>
+            </div>
+            <div style="text-align: right; font-size: 0.75rem; color: var(--text-muted);">
+                <p style="margin: 0;">Updated:</p>
+                <p id="oracle-rate-timestamp" style="margin: 0;">—</p>
             </div>
         </div>
 
@@ -264,7 +319,18 @@
         document.getElementById('display-balance').textContent = formatCurrency(user.balance || 0);
         user = await refreshUser();
         document.getElementById('display-balance').textContent = formatCurrency(user.balance);
+        await loadOracleRate();
     });
+
+    async function loadOracleRate() {
+        const oracle = await fetchOracleRates();
+        const rateEl = document.getElementById('oracle-rate');
+        const tsEl = document.getElementById('oracle-rate-timestamp');
+        if (!oracle || !rateEl || !tsEl) return;
+
+        rateEl.textContent = oracle.usd_ngn ? oracle.usd_ngn.toFixed(2) : '—';
+        tsEl.textContent = oracle.timestamp ? new Date(oracle.timestamp).toLocaleString() : 'unknown';
+    }
 
     // Account verification simulator via NIP name lookup
     function handleAccountInput(el) {

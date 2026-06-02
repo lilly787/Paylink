@@ -355,3 +355,56 @@ function toggleTheme() {
 }
 // Run immediately
 initializeTheme();
+
+// Magnetic footer interaction: items are attracted slightly to the pointer
+function initMagneticFooter() {
+    const nav = document.querySelector('.bottom-nav');
+    if (!nav) return;
+    const items = Array.from(nav.querySelectorAll('.nav-item'));
+    const maxDist = 140; // px influence radius
+
+    function handleMove(e) {
+        const px = e.clientX;
+        const py = e.clientY;
+        items.forEach(item => {
+            const r = item.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+            const dx = px - cx;
+            const dy = py - cy;
+            const dist = Math.hypot(dx, dy);
+            if (dist < maxDist) {
+                const force = (1 - dist / maxDist) * 0.6; // 0..0.6
+                const tx = dx * force;
+                const ty = dy * force * 0.35; // less vertical movement
+                const scale = 1 + 0.06 * force;
+                item.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+            } else {
+                item.style.transform = '';
+            }
+        });
+    }
+
+    function reset() { items.forEach(i => i.style.transform = ''); }
+
+    // Listen globally so pointer movement still affects the footer while scrolling
+    let raf = null;
+    function onPointer(e) {
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => handleMove(e));
+    }
+
+    nav.addEventListener('pointermove', onPointer, { passive: true });
+    nav.addEventListener('pointerleave', reset);
+
+    // mobile: only animate when touch is on the nav area, not while scrolling elsewhere
+    nav.addEventListener('touchmove', (ev) => {
+        if (ev.touches && ev.touches[0]) {
+            if (raf) cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => handleMove(ev.touches[0]));
+        }
+    }, { passive: true });
+    nav.addEventListener('touchend', reset);
+}
+
+document.addEventListener('DOMContentLoaded', initMagneticFooter);

@@ -888,8 +888,7 @@ class OracleDatabaseManager(DatabaseManager):
     def init_db(self):
         """Verify connectivity and seed default rows if needed."""
         if not self._active:
-            print("Oracle driver not available – falling back to SQLite.")
-            return
+            raise RuntimeError("Oracle driver is not available. Install oracledb and ensure ORACLE_DSN, ORACLE_USER, ORACLE_PWD are configured.")
         try:
             conn = self.get_connection()
             cur  = conn.cursor()
@@ -1426,16 +1425,19 @@ def get_db_manager() -> DatabaseManager:
     """Polymorphic provider function returning the active DatabaseManager."""
     global _manager_instance
     if _manager_instance is None:
-        provider = os.environ.get("DATABASE_PROVIDER", "sqlite")
+        provider = os.environ.get("DATABASE_PROVIDER", "oracle")
         if provider == "oracle":
             oracle_mgr = OracleDatabaseManager()
-            if oracle_mgr._active:
-                _manager_instance = oracle_mgr
-            else:
-                print("Oracle Database initialization failed. Defaulting to local SQLite provider.")
-                _manager_instance = SQLiteDatabaseManager()
-        else:
+            if not oracle_mgr._active:
+                raise RuntimeError(
+                    "Oracle driver is not installed or failed to initialize. "
+                    "Install oracledb and ensure ORACLE_DSN, ORACLE_USER, ORACLE_PWD are set."
+                )
+            _manager_instance = oracle_mgr
+        elif provider == "sqlite":
             _manager_instance = SQLiteDatabaseManager()
+        else:
+            raise ValueError(f"Unknown DATABASE_PROVIDER: {provider}")
             
         # Guarantee schema setup
         _manager_instance.init_db()
