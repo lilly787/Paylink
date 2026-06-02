@@ -272,6 +272,9 @@ def api_transfer():
     except oop_banking.BankingException as e:
         return jsonify({"success": False, "message": str(e)}), 400
     except Exception as e:
+        print(f"TRANSFER ERROR: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "message": "An error occurred during transfer."}), 500
 
 @app.route('/api/transactions/<int:user_id>')
