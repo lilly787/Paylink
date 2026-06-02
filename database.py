@@ -2,7 +2,7 @@
 database.py – Bridge module for Paylink.
 
 ALL persistence is routed through oop_banking.get_db_manager(), which returns
-an OracleDatabaseManager. There is zero SQLite usage here.
+an OracleDatabaseManager. There is zero local database fallback here.
 """
 
 import os
