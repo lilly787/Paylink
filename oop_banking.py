@@ -5,6 +5,13 @@ import hashlib
 from abc import ABC, abstractmethod
 from datetime import datetime
 
+try:
+    import oracledb
+    ORACLE_AVAILABLE = True
+except ImportError:
+    oracledb = None
+    ORACLE_AVAILABLE = False
+
 # ==========================================
 # PART 2 - Custom Banking Exceptions
 # ==========================================
@@ -349,15 +356,7 @@ class OracleDatabaseManager(DatabaseManager):
         self.dsn      = dsn      or os.environ.get("ORACLE_DSN",  "localhost:1521/XE")
         self.user     = user     or os.environ.get("ORACLE_USER", "system")
         self.password = password or os.environ.get("ORACLE_PWD",  "12345678")
-        self._active  = False
-
-        try:
-            global oracledb
-            import oracledb
-            # thin mode – no need for init_oracle_client()
-            self._active = True
-        except ImportError:
-            self._active = False
+        self._active  = ORACLE_AVAILABLE
 
     # ------------------------------------------------------------------
     # Internal helpers
