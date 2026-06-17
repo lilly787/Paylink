@@ -42,6 +42,17 @@ This project delivers a complete enterprise-grade implementation in **Python (Fl
 
 ## 2. PART 1 & 2: Object-Oriented Programming (OOP) System Design
 
+### 2.1 The Meaning of Object-Oriented Programming (OOP)
+**Object-Oriented Programming (OOP)** is a programming paradigm built entirely around the concept of "objects". Instead of simply executing a top-to-bottom list of instructions, OOP bundles **data (attributes)** and **behavior (methods)** into distinct, self-contained units known as Classes. 
+In the context of the Veritas Microfinance digital platform, OOP allows us to model real-world banking entities. Instead of storing random variables for an account's balance and status, we create structured blueprints (like `Customer`, `Account`, and `Transaction`). This ensures high security, prevents accidental data corruption, and makes the system incredibly scalable as the bank grows.
+
+### 2.2 The Web Application Architecture
+The digital platform is designed using a modern **3-Tier Architecture**:
+1. **Frontend (Browser UI):** Built with HTML/CSS/JS and rendered using Flask templates, it serves as the presentation layer where students and faculty interact with their accounts.
+2. **Backend Controller (Flask):** The `app.py` script acts as the traffic controller. It receives API requests from the frontend, routes them, and communicates with the underlying OOP infrastructure.
+3. **OOP Logic & Database Engine:** The core banking engine (`oop_banking.py`) applies strict business rules and security validations using Python objects, before officially persisting the financial ledgers into an **Oracle Database**. The app also features a live integration (in `oracle.py`) that fetches real-time global exchange rates to provide users with up-to-date currency valuations.
+
+### 2.3 Domain Models & Architecture
 The application's backend architecture is designed around domain-driven models that encapsulate attributes and behaviors.
 
 ### UML Class Diagram
@@ -152,7 +163,9 @@ classDiagram
 
 To ensure data integrity, eliminate redundancy, and support high transactional throughput, the Veritas Microfinance database was normalized up to Third Normal Form (3NF).
 
-### Entity-Relationship (ER) Diagram
+### Entity-Relationship (ER) Diagram & Table Schemas
+
+*(Note: If the visual ERD diagram does not render in your PDF, please refer to the detailed **Textual Schema** provided below it.)*
 
 ```mermaid
 erDiagram
@@ -212,9 +225,9 @@ erDiagram
         int source_account_id FK
         int destination_account_id FK
         number amount
-        varchar reference UK
+        varchar reference
         varchar description
-        timestamp created_at
+        timestamp date_created
     }
 
     AUDIT_LOGS {
