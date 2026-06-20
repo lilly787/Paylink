@@ -87,7 +87,3 @@ git push origin HEAD
 ## Troubleshooting
 - If `get_db_manager()` raises a RuntimeError, verify `ORACLE_*` env vars and that `oracledb` is installed.
 - If schema objects are missing, run `oracle_schema.sql` from SQL Developer.
-
----
-
-If you want, I can add these README changes to the repo and push them now.

@@ -13,7 +13,7 @@ except ImportError:
     ORACLE_AVAILABLE = False
 
 # ==========================================
-# PART 2 - Custom Banking Exceptions
+#  Custom Banking Exceptions
 # ==========================================
 
 class BankingException(Exception):
@@ -257,9 +257,8 @@ class TransferService:
         return ref
 
 
-# ==========================================
-# PART 3 & 5 - Relational Abstraction Layer
-# ==========================================
+ #Relational Abstraction Layer
+
 
 class DatabaseManager(ABC):
     """Abstract Base Class specifying interfaces for persistent banking storage."""
